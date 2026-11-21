@@ -1,4 +1,5 @@
 import React from 'react';
+import Preloader from './components/Preloader';
 import BlackCursor from './components/BlackCursor';
 import HeroSection from './components/HeroSection';
 import KeycapSkillsSection from './components/KeycapSkillsSection';
@@ -13,6 +14,7 @@ import ContactSection from './components/ContactSection';
 export const App: React.FC = () => {
   return (
     <div className="bg-[#0C0C0C] text-[#D7E2EA] font-['Kanit'] min-h-screen overflow-x-clip selection:bg-[#B600A8]/30 selection:text-white antialiased">
+      <Preloader />
       <BlackCursor />
       <HeroSection />
       <KeycapSkillsSection />

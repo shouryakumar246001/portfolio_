@@ -14,8 +14,8 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = '/resume.html';
-    link.download = 'Shourya_Kumar_Resume.html';
+    link.href = '/Shourya_Kumar_Resume.pdf';
+    link.download = 'Shourya_Kumar_Resume.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

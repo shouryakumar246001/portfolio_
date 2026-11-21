@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FadeIn from './FadeIn';
-import { Volume2, VolumeX, Sparkles } from 'lucide-react';
 
 interface KeyConfig {
   id: string;
@@ -23,7 +22,7 @@ const keys: KeyConfig[] = [
     sublabel: 'App Router & Full-Stack',
     category: 'Framework',
     color: '#FFFFFF',
-    sideColor: '#C4C4C8',
+    sideColor: '#CBD5E1',
     textColor: '#09090B',
     shortcut: '1',
     icon: (col) => (
@@ -38,8 +37,8 @@ const keys: KeyConfig[] = [
     label: 'REACT',
     sublabel: 'React 19 & Component UI',
     category: 'Frontend',
-    color: '#131E2B',
-    sideColor: '#0A121C',
+    color: '#1E293B',
+    sideColor: '#475569',
     textColor: '#38BDF8',
     shortcut: '2',
     icon: (col) => (
@@ -72,7 +71,7 @@ const keys: KeyConfig[] = [
     sublabel: 'Modern ES6+ & DOM',
     category: 'Language',
     color: '#FACC15',
-    sideColor: '#CA8A04',
+    sideColor: '#EAB308',
     textColor: '#18181B',
     shortcut: '4',
     icon: () => (
@@ -87,7 +86,7 @@ const keys: KeyConfig[] = [
     sublabel: 'Algorithms & Automation',
     category: 'Language',
     color: '#1E3A5F',
-    sideColor: '#0F243E',
+    sideColor: '#2B578A',
     textColor: '#FDE047',
     shortcut: '5',
     icon: () => (
@@ -122,8 +121,8 @@ const keys: KeyConfig[] = [
     label: 'NODE.JS',
     sublabel: 'Server Runtime & APIs',
     category: 'Backend',
-    color: '#16A34A',
-    sideColor: '#15803D',
+    color: '#22C55E',
+    sideColor: '#16A34A',
     textColor: '#FFFFFF',
     shortcut: 'w',
     icon: (col) => (
@@ -153,8 +152,8 @@ const keys: KeyConfig[] = [
     label: 'REDUX',
     sublabel: 'Centralized State Toolkit',
     category: 'State Mgmt',
-    color: '#7C3AED',
-    sideColor: '#6D28D9',
+    color: '#8B5CF6',
+    sideColor: '#7C3AED',
     textColor: '#FFFFFF',
     shortcut: 'r',
     icon: (col) => (
@@ -171,9 +170,9 @@ const keys: KeyConfig[] = [
     label: 'PRISMA',
     sublabel: 'Relational ORM & DB',
     category: 'Database',
-    color: '#1E293B',
-    sideColor: '#0F172A',
-    textColor: '#CBD5E1',
+    color: '#334155',
+    sideColor: '#475569',
+    textColor: '#E2E8F0',
     shortcut: 't',
     icon: (col) => (
       <svg className="w-8 h-8" viewBox="0 0 100 100" fill="none">
@@ -189,9 +188,9 @@ const keys: KeyConfig[] = [
     label: 'NEXT.JS API',
     sublabel: 'Serverless Edge Handlers',
     category: 'Backend',
-    color: '#18181B',
-    sideColor: '#09090B',
-    textColor: '#A1A1AA',
+    color: '#27272A',
+    sideColor: '#52525B',
+    textColor: '#E4E4E7',
     shortcut: 'a',
     icon: (col) => (
       <svg className="w-8 h-8" viewBox="0 0 100 100" fill="none">
@@ -206,8 +205,8 @@ const keys: KeyConfig[] = [
     label: 'GIT',
     sublabel: 'Version Control & Flow',
     category: 'DevOps',
-    color: '#EA580C',
-    sideColor: '#C2410C',
+    color: '#F97316',
+    sideColor: '#EA580C',
     textColor: '#FFFFFF',
     shortcut: 's',
     icon: (col) => (
@@ -225,8 +224,8 @@ const keys: KeyConfig[] = [
     label: 'GITHUB',
     sublabel: 'CI/CD & Collaboration',
     category: 'Platform',
-    color: '#18181B',
-    sideColor: '#09090B',
+    color: '#27272A',
+    sideColor: '#52525B',
     textColor: '#F4F4F5',
     shortcut: 'd',
     icon: (col) => (
@@ -240,8 +239,8 @@ const keys: KeyConfig[] = [
     label: 'VERCEL',
     sublabel: 'Deployment & Edge CDN',
     category: 'Cloud',
-    color: '#09090B',
-    sideColor: '#000000',
+    color: '#18181B',
+    sideColor: '#52525B',
     textColor: '#F4F4F5',
     shortcut: 'f',
     icon: (col) => (
@@ -255,8 +254,8 @@ const keys: KeyConfig[] = [
     label: 'NETLIFY',
     sublabel: 'Serverless JAMStack',
     category: 'Cloud',
-    color: '#0D9488',
-    sideColor: '#0F766E',
+    color: '#14B8A6',
+    sideColor: '#0D9488',
     textColor: '#FFFFFF',
     shortcut: 'g',
     icon: (col) => (
@@ -290,8 +289,8 @@ const keys: KeyConfig[] = [
     label: 'CSS',
     sublabel: 'Responsive Layouts & Motion',
     category: 'Styling',
-    color: '#2563EB',
-    sideColor: '#1D4ED8',
+    color: '#3B82F6',
+    sideColor: '#2563EB',
     textColor: '#FFFFFF',
     shortcut: 'x',
     icon: (col) => (
@@ -307,7 +306,7 @@ const keys: KeyConfig[] = [
     sublabel: 'PostgreSQL & MySQL Querying',
     category: 'Database',
     color: '#475569',
-    sideColor: '#334155',
+    sideColor: '#64748B',
     textColor: '#F8FAFC',
     shortcut: 'c',
     icon: (col) => (
@@ -323,8 +322,8 @@ const keys: KeyConfig[] = [
     label: 'OPENCV',
     sublabel: 'Computer Vision & Images',
     category: 'AI / Vision',
-    color: '#65A30D',
-    sideColor: '#4D7C0F',
+    color: '#84CC16',
+    sideColor: '#65A30D',
     textColor: '#FFFFFF',
     shortcut: 'v',
     icon: () => (
@@ -340,7 +339,7 @@ const keys: KeyConfig[] = [
     label: 'ML / AI',
     sublabel: 'Neural Nets & Intelligence',
     category: 'AI / Model',
-    color: '#F97316',
+    color: '#FB923C',
     sideColor: '#EA580C',
     textColor: '#FFFFFF',
     shortcut: 'b',
@@ -359,7 +358,7 @@ const keys: KeyConfig[] = [
   },
 ];
 
-// High-fidelity Web Audio API sound synthesizer
+// High-fidelity Web Audio API mechanical keyboard switch synthesizer
 let sharedAudioCtx: AudioContext | null = null;
 
 function getAudioCtx(): AudioContext | null {
@@ -368,45 +367,41 @@ function getAudioCtx(): AudioContext | null {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (AudioCtx) sharedAudioCtx = new AudioCtx();
   }
-  if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume().catch(() => {});
-  }
   return sharedAudioCtx;
 }
 
-export function playKeycapSound(pitchOffset = 0, isPress = false) {
+function executeSound(ctx: AudioContext, pitchOffset = 0, isPress = false) {
   try {
-    const ctx = getAudioCtx();
-    if (!ctx) return;
-
     const now = ctx.currentTime;
 
-    // 1. Transient click snap (mechanical stem click)
+    // 1. Mechanical switch tactile click (tonal impulse)
     const osc = ctx.createOscillator();
     const oscGain = ctx.createGain();
 
-    const baseFreq = isPress ? 220 : 540;
-    const freq = Math.max(80, baseFreq + pitchOffset * 18 + (Math.random() * 30 - 15));
+    const baseFreq = isPress ? 220 : 640;
+    const freq = Math.max(120, baseFreq + (pitchOffset % 5) * 35 + (Math.random() * 40 - 20));
 
     osc.type = isPress ? 'triangle' : 'sine';
     osc.frequency.setValueAtTime(freq, now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.3), now + (isPress ? 0.08 : 0.045));
+    osc.frequency.exponentialRampToValueAtTime(Math.max(60, freq * 0.3), now + (isPress ? 0.09 : 0.05));
 
-    oscGain.gain.setValueAtTime(isPress ? 0.22 : 0.14, now);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + (isPress ? 0.08 : 0.045));
+    // Clear, audible volume
+    const vol = isPress ? 0.45 : 0.32;
+    oscGain.gain.setValueAtTime(vol, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + (isPress ? 0.09 : 0.05));
 
     osc.connect(oscGain);
     oscGain.connect(ctx.destination);
 
     osc.start(now);
-    osc.stop(now + (isPress ? 0.09 : 0.05));
+    osc.stop(now + (isPress ? 0.1 : 0.06));
 
-    // 2. High-frequency tactile switch plastic clack (bandpass noise burst)
-    const bufferSize = Math.floor(ctx.sampleRate * 0.016);
+    // 2. Crisp keycap plastic snap (high-frequency tactile noise)
+    const bufferSize = Math.floor(ctx.sampleRate * (isPress ? 0.025 : 0.018));
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.28));
     }
 
     const noise = ctx.createBufferSource();
@@ -414,44 +409,78 @@ export function playKeycapSound(pitchOffset = 0, isPress = false) {
 
     const noiseFilter = ctx.createBiquadFilter();
     noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(isPress ? 2400 : 3600, now);
-    noiseFilter.Q.setValueAtTime(3.2, now);
+    noiseFilter.frequency.setValueAtTime(isPress ? 2200 : 4400, now);
+    noiseFilter.Q.setValueAtTime(2.2, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(isPress ? 0.28 : 0.2, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.016);
+    const noiseVol = isPress ? 0.42 : 0.34;
+    noiseGain.gain.setValueAtTime(noiseVol, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + (isPress ? 0.024 : 0.017));
 
     noise.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
     noiseGain.connect(ctx.destination);
 
     noise.start(now);
-    noise.stop(now + 0.017);
+    noise.stop(now + (isPress ? 0.026 : 0.019));
   } catch {
-    // Graceful fallback if audio is not permitted yet
+    // Graceful fallback
+  }
+}
+
+function playKeycapSound(pitchOffset = 0, isPress = false) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        executeSound(ctx, pitchOffset, isPress);
+      }).catch(() => { });
+    } else {
+      executeSound(ctx, pitchOffset, isPress);
+    }
+  } catch {
+    // Graceful fallback
   }
 }
 
 export const KeycapSkillsSection: React.FC = () => {
   const [activeKey, setActiveKey] = useState<KeyConfig | null>(keys[0]);
   const [pressedKeyId, setPressedKeyId] = useState<string | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const soundRef = useRef(soundEnabled);
-  soundRef.current = soundEnabled;
 
   const handleKeyInteraction = useCallback((key: KeyConfig, isPress: boolean) => {
     setActiveKey(key);
     if (isPress) {
       setPressedKeyId(key.id);
     }
-    if (soundRef.current) {
-      const idx = keys.findIndex((k) => k.id === key.id);
-      playKeycapSound(idx, isPress);
-    }
+    // Keyboard sound is ALWAYS ON
+    const idx = keys.findIndex((k) => k.id === key.id);
+    playKeycapSound(idx, isPress);
   }, []);
 
   const handleKeyRelease = useCallback(() => {
     setPressedKeyId(null);
+  }, []);
+
+  // Pre-unlock Web Audio on first user interaction so hover sound is immediately active
+  useEffect(() => {
+    const unlock = () => {
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => { });
+      }
+    };
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('mousemove', unlock, { once: true });
+    window.addEventListener('touchstart', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('mousemove', unlock);
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
   }, []);
 
   // Physical keyboard key press listener
@@ -476,14 +505,9 @@ export const KeycapSkillsSection: React.FC = () => {
   }, [handleKeyInteraction]);
 
   return (
-    <section id="skills" className="bg-[#0C0C0C] py-20 sm:py-28 px-4 sm:px-6 overflow-hidden select-none">
+    <section id="keycaps" className="bg-[#0C0C0C] py-20 sm:py-28 px-4 sm:px-6 overflow-hidden select-none">
       {/* Section Header */}
       <FadeIn delay={0} y={30} className="text-center mb-10 sm:mb-14 max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-xs font-mono uppercase tracking-widest text-[#38BDF8] mb-4">
-          <Sparkles className="w-3.5 h-3.5 text-[#38BDF8]" />
-          Interactive 3D Skills Keypad
-        </div>
-
         <h2
           className="font-black uppercase tracking-tight leading-none text-[clamp(2.5rem,7vw,90px)] text-white"
           style={{ fontFamily: 'Kanit, sans-serif' }}
@@ -491,27 +515,8 @@ export const KeycapSkillsSection: React.FC = () => {
           Explore My Skills
         </h2>
         <p className="text-[#D7E2EA]/70 text-xs sm:text-sm font-mono uppercase tracking-widest mt-3 flex items-center justify-center gap-2">
-          <span>Hover, tap, or press keys to test switches</span>
+          <span>Hover, tap, or press a key</span>
         </p>
-
-        {/* Audio Toggle Pill */}
-        <div className="mt-5 flex items-center justify-center">
-          <button
-            onClick={() => {
-              const next = !soundEnabled;
-              setSoundEnabled(next);
-              if (next) playKeycapSound(5, false);
-            }}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-mono tracking-wider transition-all duration-200 cursor-pointer ${
-              soundEnabled
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
-            }`}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            <span>KEYBOARD SOUND: {soundEnabled ? 'ON (CLICK & HOVER)' : 'MUTED'}</span>
-          </button>
-        </div>
       </FadeIn>
 
       {/* Main 3D Keypad Container */}
@@ -535,28 +540,9 @@ export const KeycapSkillsSection: React.FC = () => {
               maxWidth: 720,
             }}
           >
-            {/* Retro OLED / LCD Interactive Status Display */}
-            <div className="mb-6 rounded-2xl bg-black/60 border border-white/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-inner">
-              <div className="flex items-center gap-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-                <span className="text-[11px] font-mono tracking-widest text-white/50 uppercase">
-                  ACTIVE SWITCH:
-                </span>
-                <span className="text-xs sm:text-sm font-bold text-white tracking-wider font-mono">
-                  {activeKey?.label || 'READY'}
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-[#38BDF8] font-mono">
-                  {activeKey?.category || 'TECH'}
-                </span>
-              </div>
-              <div className="text-xs font-mono text-[#D7E2EA]/80 hidden sm:block">
-                {activeKey?.sublabel || 'Hover any switch'}
-              </div>
-            </div>
-
             {/* 4x5 Mechanical Keypad Grid */}
             <div
-              className="grid gap-3 sm:gap-4 justify-center"
+              className="grid gap-3.5 sm:gap-4.5 md:gap-5 justify-center pb-2"
               style={{
                 gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
               }}
@@ -570,7 +556,7 @@ export const KeycapSkillsSection: React.FC = () => {
                     key={k.id}
                     className="relative cursor-pointer select-none group"
                     style={{
-                      height: 88,
+                      height: 94,
                       // Outer stable hit-box prevents ANY hover flickering!
                     }}
                     onMouseEnter={() => handleKeyInteraction(k, false)}
@@ -584,24 +570,27 @@ export const KeycapSkillsSection: React.FC = () => {
                   >
                     {/* Keycap Body (with 3D bottom bevel extrusion) */}
                     <div
-                      className="w-full h-full rounded-2xl relative transition-all duration-75 ease-out"
+                      className="w-full h-[82px] sm:h-[86px] rounded-2xl relative transition-all duration-100 ease-out"
                       style={{
                         transform: isPressed
-                          ? 'translateY(6px)'
+                          ? 'translateY(8px)'
                           : isHovered
-                          ? 'translateY(-2px)'
-                          : 'translateY(0)',
+                            ? 'translateY(-4px)'
+                            : 'translateY(0)',
                       }}
                     >
-                      {/* 3D Side Shadow / Extrusion */}
+                      {/* 3D Side Shadow / Extrusion (Taller lifted side wall) */}
                       <div
                         className="absolute inset-0 rounded-2xl pointer-events-none"
                         style={{
                           background: k.sideColor,
-                          transform: isPressed ? 'translateY(2px)' : 'translateY(8px)',
+                          transform: isPressed ? 'translateY(3px)' : 'translateY(13px)',
+                          borderBottom: '3px solid rgba(0,0,0,0.35)',
                           boxShadow: isPressed
-                            ? `0 2px 4px rgba(0,0,0,0.4)`
-                            : `0 10px 18px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.5)`,
+                            ? `0 2px 4px rgba(0,0,0,0.45)`
+                            : isHovered
+                            ? `0 16px 26px rgba(0,0,0,0.75), 0 3px 6px rgba(0,0,0,0.5)`
+                            : `0 12px 20px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.45)`,
                           transition: 'transform 0.08s ease, box-shadow 0.08s ease',
                         }}
                       />
@@ -610,11 +599,12 @@ export const KeycapSkillsSection: React.FC = () => {
                       <div
                         className="absolute inset-0 rounded-2xl flex flex-col items-center justify-between p-2 pb-2.5 overflow-hidden"
                         style={{
-                          background: `linear-gradient(180deg, ${k.color} 0%, ${k.sideColor} 180%)`,
-                          border: '1px solid rgba(255,255,255,0.22)',
+                          background: `linear-gradient(180deg, ${k.color} 0%, ${k.color} 88%, ${k.sideColor} 100%)`,
+                          border: '1px solid rgba(255,255,255,0.32)',
+                          borderBottom: '2.5px solid rgba(0,0,0,0.3)',
                           boxShadow: isHovered
-                            ? `inset 0 1px 2px rgba(255,255,255,0.6), 0 0 16px ${k.color}60`
-                            : 'inset 0 1px 1px rgba(255,255,255,0.4)',
+                            ? `inset 0 1.5px 2px rgba(255,255,255,0.75), 0 0 18px ${k.color}45`
+                            : 'inset 0 1px 1.5px rgba(255,255,255,0.5)',
                         }}
                       >
                         {/* Keycap Icon */}
