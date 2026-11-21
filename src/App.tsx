@@ -1,0 +1,30 @@
+import React from 'react';
+import BlackCursor from './components/BlackCursor';
+import HeroSection from './components/HeroSection';
+import KeycapSkillsSection from './components/KeycapSkillsSection';
+import MarqueeSection from './components/MarqueeSection';
+import AboutSection from './components/AboutSection';
+import SkillsSection from './components/SkillsSection';
+import ProjectsSection from './components/ProjectsSection';
+import ExperienceSection from './components/ExperienceSection';
+import AchievementsSection from './components/AchievementsSection';
+import ContactSection from './components/ContactSection';
+
+export const App: React.FC = () => {
+  return (
+    <div className="bg-[#0C0C0C] text-[#D7E2EA] font-['Kanit'] min-h-screen overflow-x-clip selection:bg-[#B600A8]/30 selection:text-white antialiased">
+      <BlackCursor />
+      <HeroSection />
+      <KeycapSkillsSection />
+      <MarqueeSection />
+      <AboutSection />
+      <SkillsSection />
+      <ProjectsSection />
+      <ExperienceSection />
+      <AchievementsSection />
+      <ContactSection />
+    </div>
+  );
+};
+
+export default App;
