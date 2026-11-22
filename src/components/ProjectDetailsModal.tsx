@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Github, CheckCircle2, Layers } from 'lucide-react';
 import Interactive3DText from './Interactive3DText';
+import { playKeyboardSound } from '../utils/audio';
 
 export interface ProjectItem {
   number: string;
@@ -94,9 +95,9 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">
                 <Interactive3DText text={project.name} />
               </h2>
-              <p className="text-xs sm:text-sm text-[#D7E2EA]/60 uppercase tracking-widest font-mono mt-1">
-                {project.category}
-              </p>
+              <div className="text-xs sm:text-sm text-[#D7E2EA]/65 uppercase tracking-widest font-mono mt-1">
+                <Interactive3DText text={project.category} />
+              </div>
             </div>
 
             {/* Video Showcase Preview */}
@@ -113,11 +114,12 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
             </div>
 
-            {/* Project Description */}
-            <div>
-              <p className="text-sm sm:text-base md:text-lg text-[#D7E2EA]/90 leading-relaxed font-light">
-                {project.description}
-              </p>
+            {/* Project Description (with interactive 3D letter & word hover) */}
+            <div className="leading-relaxed">
+              <Interactive3DText
+                text={project.description}
+                className="text-sm sm:text-base md:text-lg text-[#D7E2EA]/90 font-light"
+              />
             </div>
 
             {/* Dedicated FEATURES Section */}
@@ -125,20 +127,37 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#B600A8]" />
                 <h3 className="text-xs uppercase tracking-widest font-mono text-[#D7E2EA]/75 font-semibold">
-                  Key Features
+                  <Interactive3DText text="Key Features" />
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 {project.keyFeatures.map((feature, idx) => (
-                  <div
+                  <motion.div
                     key={idx}
-                    className="flex items-start gap-2.5 p-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-colors"
+                    onMouseEnter={() => playKeyboardSound(idx, false)}
+                    onClick={() => playKeyboardSound(idx, true)}
+                    whileHover={{
+                      y: -5,
+                      scale: 1.025,
+                      rotateX: -4,
+                      rotateY: (idx % 2 === 0 ? 1 : -1) * 3,
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: 'rgba(182, 0, 168, 0.55)',
+                      boxShadow: '0 12px 30px rgba(0,0,0,0.85), 0 0 25px rgba(182,0,168,0.3)',
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 420,
+                      damping: 15,
+                    }}
+                    style={{ transformStyle: 'preserve-3d' }}
+                    className="flex items-start gap-2.5 p-3 sm:p-3.5 rounded-xl bg-white/[0.04] border border-white/10 transition-colors cursor-pointer select-none"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#C084FC] shrink-0 mt-0.5" />
-                    <span className="text-xs sm:text-sm text-[#D7E2EA]/85 leading-snug">
-                      {feature}
+                    <span className="text-xs sm:text-sm text-[#D7E2EA]/90 leading-snug">
+                      <Interactive3DText text={feature} />
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -148,17 +167,34 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
               <div className="flex items-center gap-2">
                 <Layers className="w-3.5 h-3.5 text-[#B600A8]" />
                 <h3 className="text-xs uppercase tracking-widest font-mono text-[#D7E2EA]/75 font-semibold">
-                  Technologies &amp; Tools
+                  <Interactive3DText text="Technologies & Tools" />
                 </h3>
               </div>
               <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech) => (
-                  <span
+                {project.technologies.map((tech, idx) => (
+                  <motion.span
                     key={tech}
-                    className="px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/15 hover:border-white/30 text-xs sm:text-sm font-mono text-white/90 transition-colors"
+                    onMouseEnter={() => playKeyboardSound(idx, false)}
+                    onClick={() => playKeyboardSound(idx, true)}
+                    whileHover={{
+                      y: -6,
+                      scale: 1.12,
+                      rotateX: -10,
+                      rotateY: 8,
+                      backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                      borderColor: 'rgba(182, 0, 168, 0.65)',
+                      boxShadow: '0 8px 25px rgba(182, 0, 168, 0.4)',
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 450,
+                      damping: 14,
+                    }}
+                    style={{ transformStyle: 'preserve-3d' }}
+                    className="px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-xs sm:text-sm font-mono text-white/90 transition-colors cursor-pointer select-none inline-block"
                   >
-                    {tech}
-                  </span>
+                    <Interactive3DText text={tech} />
+                  </motion.span>
                 ))}
               </div>
             </div>

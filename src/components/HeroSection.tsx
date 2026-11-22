@@ -1,12 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import FadeIn from './FadeIn';
 import ResumeModal from './ResumeModal';
 import ParticleCloud from './ParticleCloud';
 import { Github, Linkedin, Download } from 'lucide-react';
+import { playKeyboardSound } from '../utils/audio';
 
 export const HeroSection: React.FC = () => {
   const [isResumeOpen, setIsResumeOpen] = useState(false);
-  const openResume = () => setIsResumeOpen(true);
+  const heroHeadingRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroHeadingRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 22,
+    restDelta: 0.001,
+  });
+
+  // 3D transformation functioning like Project and Experience section headings
+  const scrollRotateX = useTransform(smoothProgress, [0, 1], [0, 30]);
+  const scale = useTransform(smoothProgress, [0, 1], [1, 0.88]);
+  const opacity = useTransform(smoothProgress, [0, 0.7, 1], [1, 0.8, 0]);
+  const y = useTransform(smoothProgress, [0, 1], [0, 60]);
+
+  const handleDownloadResume = () => {
+    playKeyboardSound(0, true);
+    const link = document.createElement('a');
+    link.href = '/Shourya_Kumar_Resume.pdf';
+    link.download = 'Shourya_Kumar_Resume.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setIsResumeOpen(true);
+  };
 
   return (
     <>
@@ -57,8 +87,9 @@ export const HeroSection: React.FC = () => {
                 <img src="/codolio.png" alt="Codolio" className="w-4 h-4 sm:w-4.5 sm:h-4.5 object-contain" />
               </a>
               <button
-                onClick={openResume}
+                onClick={handleDownloadResume}
                 className="hidden md:inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-md text-xs uppercase tracking-wider font-medium text-[#D7E2EA] hover:bg-white/10 hover:border-white/40 shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.1)] transition-all cursor-pointer"
+                title="Download Resume"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Resume</span>
@@ -67,22 +98,44 @@ export const HeroSection: React.FC = () => {
           </nav>
         </FadeIn>
 
-        {/* Hero Heading: "Hi, I'm Shourya Kumar." */}
-        <div className="w-full overflow-hidden mt-6 sm:mt-4 md:mt-2 z-10 relative text-center px-4 pointer-events-none">
-          <FadeIn delay={0.15} y={40}>
-            <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[9.5vw] sm:text-[11vw] md:text-[12.5vw] lg:text-[13.5vw] select-none">
+        {/* Hero Heading: "Hi, I'm Shourya Kumar." with 3D depth and original design */}
+        <div
+          ref={heroHeadingRef}
+          className="w-full overflow-hidden mt-6 sm:mt-4 md:mt-2 z-10 relative text-center px-4"
+          style={{ perspective: 1200 }}
+        >
+          <motion.div
+            style={{
+              rotateX: scrollRotateX,
+              scale,
+              opacity,
+              y,
+              transformStyle: 'preserve-3d',
+            }}
+            className="inline-block w-full cursor-default"
+          >
+            <h1
+              className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[9.5vw] sm:text-[11vw] md:text-[12.5vw] lg:text-[13.5vw] select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
+              style={{
+                transform: 'translateZ(35px)',
+                transformStyle: 'preserve-3d',
+                textShadow: '0 4px 20px rgba(0,0,0,0.85), 0 10px 40px rgba(182,0,168,0.25)',
+              }}
+            >
               Hi, I&apos;m Shourya Kumar.
             </h1>
-          </FadeIn>
-          <FadeIn delay={0.25} y={20}>
-            <div className="flex items-center justify-center gap-2 sm:gap-3 mt-3 sm:mt-4 text-[#D7E2EA]/80 font-medium uppercase tracking-widest text-[clamp(0.7rem,1.2vw,1.1rem)]">
+
+            <div
+              style={{ transform: 'translateZ(18px)' }}
+              className="flex items-center justify-center gap-2 sm:gap-3 mt-3 sm:mt-4 text-[#D7E2EA]/80 font-medium uppercase tracking-widest text-[clamp(0.7rem,1.2vw,1.1rem)]"
+            >
               <span className="text-[#BBCCD7]">Software Developer</span>
               <span className="text-[#B600A8]">•</span>
               <span className="text-[#BBCCD7]">Full-Stack Developer</span>
               <span className="text-[#B600A8]">•</span>
               <span className="text-[#BBCCD7]">Competitive Programmer</span>
             </div>
-          </FadeIn>
+          </motion.div>
         </div>
 
         {/* Center open area: 3D Donut is fully visible and interactive here */}
@@ -98,7 +151,7 @@ export const HeroSection: React.FC = () => {
 
           <FadeIn delay={0.5} y={20} className="flex flex-wrap items-center justify-center gap-3 shrink-0">
             <button
-              onClick={openResume}
+              onClick={handleDownloadResume}
               className="rounded-full text-white font-medium uppercase tracking-widest px-7 py-3 sm:px-9 sm:py-3.5 text-xs sm:text-sm cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 inline-flex items-center gap-2"
               style={{
                 background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',

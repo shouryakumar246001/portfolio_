@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
 import FadeIn from './FadeIn';
 
 interface KeyConfig {
@@ -504,20 +505,77 @@ export const KeycapSkillsSection: React.FC = () => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleKeyInteraction]);
 
+  // --- "Explore My Skills" 3D scroll transform (same as Hero heading) ---
+  const headingRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: headingScrollY } = useScroll({
+    target: headingRef,
+    offset: ['start end', 'end start'],
+  });
+  const smoothHeading = useSpring(headingScrollY, { stiffness: 80, damping: 22, restDelta: 0.001 });
+  const headingRotateX = useTransform(smoothHeading, [0, 0.5, 1], [0, 0, 28]);
+  const headingScale = useTransform(smoothHeading, [0, 0.5, 1], [1, 1, 0.88]);
+  const headingOpacity = useTransform(smoothHeading, [0, 0.5, 0.85, 1], [1, 1, 0.75, 0]);
+  const headingY = useTransform(smoothHeading, [0, 1], [0, 50]);
+
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [boardRot, setBoardRot] = useState({ x: 18, y: -3 });
+
+  const handleBoardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!boardRef.current) return;
+    const rect = boardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Smooth interactive 3D tilt around the natural resting perspective (18deg X, -3deg Y)
+    const tiltX = 18 - ((y - centerY) / centerY) * 11;
+    const tiltY = -3 + ((x - centerX) / centerX) * 13;
+
+    setBoardRot({ x: tiltX, y: tiltY });
+  };
+
+  const handleBoardMouseLeave = () => {
+    setBoardRot({ x: 18, y: -3 });
+  };
+
   return (
     <section id="keycaps" className="bg-[#0C0C0C] py-20 sm:py-28 px-4 sm:px-6 overflow-hidden select-none">
-      {/* Section Header */}
-      <FadeIn delay={0} y={30} className="text-center mb-10 sm:mb-14 max-w-4xl mx-auto">
-        <h2
-          className="font-black uppercase tracking-tight leading-none text-[clamp(2.5rem,7vw,90px)] text-white"
-          style={{ fontFamily: 'Kanit, sans-serif' }}
+      {/* Section Header — 3D scroll transform matching HeroSection */}
+      <div
+        ref={headingRef}
+        className="text-center mb-10 sm:mb-14 max-w-4xl mx-auto overflow-hidden"
+        style={{ perspective: 1200 }}
+      >
+        <motion.div
+          style={{
+            rotateX: headingRotateX,
+            scale: headingScale,
+            opacity: headingOpacity,
+            y: headingY,
+            transformStyle: 'preserve-3d',
+          }}
+          className="inline-block w-full"
         >
-          Explore My Skills
-        </h2>
-        <p className="text-[#D7E2EA]/70 text-xs sm:text-sm font-mono uppercase tracking-widest mt-3 flex items-center justify-center gap-2">
-          <span>Hover, tap, or press a key</span>
-        </p>
-      </FadeIn>
+          <h2
+            className="hero-heading font-black uppercase tracking-tight leading-none text-[clamp(2.5rem,7vw,90px)] drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)] cursor-default"
+            style={{
+              fontFamily: 'Kanit, sans-serif',
+              transform: 'translateZ(35px)',
+              transformStyle: 'preserve-3d',
+              textShadow: '0 4px 20px rgba(0,0,0,0.85), 0 10px 40px rgba(182,0,168,0.25)',
+            }}
+          >
+            Explore My Skills
+          </h2>
+          <p
+            className="text-[#D7E2EA]/70 text-xs sm:text-sm font-mono uppercase tracking-widest mt-3 flex items-center justify-center gap-2"
+            style={{ transform: 'translateZ(18px)' }}
+          >
+            <span>Hover, tap, or press a key</span>
+          </p>
+        </motion.div>
+      </div>
 
       {/* Main 3D Keypad Container */}
       <FadeIn delay={0.1} y={40}>
@@ -528,16 +586,29 @@ export const KeycapSkillsSection: React.FC = () => {
             perspectiveOrigin: '50% 25%',
           }}
         >
-          <div
-            className="relative mx-auto rounded-[32px] p-5 sm:p-7 md:p-9 transition-transform duration-300"
+          <motion.div
+            ref={boardRef}
+            onMouseMove={handleBoardMouseMove}
+            onMouseLeave={handleBoardMouseLeave}
+            animate={{
+              rotateX: boardRot.x,
+              rotateY: boardRot.y,
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 240,
+              damping: 22,
+              mass: 0.75,
+            }}
+            className="relative mx-auto rounded-[32px] p-5 sm:p-7 md:p-9"
             style={{
-              transform: 'rotateX(18deg) rotateY(-3deg)',
               transformStyle: 'preserve-3d',
               background: 'linear-gradient(165deg, #222226 0%, #151518 50%, #0d0d0f 100%)',
               boxShadow:
                 '0 40px 90px rgba(0,0,0,0.95), 0 0 0 1.5px rgba(255,255,255,0.1), inset 0 2px 2px rgba(255,255,255,0.15)',
               border: '1px solid rgba(255,255,255,0.06)',
               maxWidth: 720,
+              willChange: 'transform',
             }}
           >
             {/* 4x5 Mechanical Keypad Grid */}
@@ -651,7 +722,7 @@ export const KeycapSkillsSection: React.FC = () => {
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </FadeIn>
     </section>

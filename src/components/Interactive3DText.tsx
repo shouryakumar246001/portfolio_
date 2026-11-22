@@ -1,28 +1,31 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { playKeyboardSound } from '../utils/audio';
 
 interface Interactive3DTextProps {
   text: string;
   className?: string;
   letterClassName?: string;
+  wordSpacing?: string;
 }
 
 export const Interactive3DText: React.FC<Interactive3DTextProps> = ({
   text,
   className = '',
   letterClassName = '',
+  wordSpacing = 'mr-[0.28em]',
 }) => {
   const words = text.split(' ');
 
   return (
     <span
-      className={`inline-flex flex-wrap gap-x-2 sm:gap-x-2.5 items-baseline ${className}`}
+      className={`inline-flex flex-wrap items-baseline ${className}`}
       style={{ perspective: 1000 }}
     >
       {words.map((word, wordIndex) => (
         <span
           key={wordIndex}
-          className="inline-flex whitespace-nowrap"
+          className={`inline-flex whitespace-nowrap ${wordSpacing}`}
           style={{ transformStyle: 'preserve-3d' }}
         >
           {word.split('').map((char, charIndex) => (
@@ -52,7 +55,10 @@ const InteractiveLetter: React.FC<{
 
   return (
     <motion.span
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        playKeyboardSound(index, false);
+      }}
       onMouseLeave={() => setIsHovered(false)}
       className={`inline-block relative cursor-pointer select-none ${className}`}
       style={{
@@ -62,13 +68,14 @@ const InteractiveLetter: React.FC<{
       animate={
         isHovered
           ? {
-              y: -12,
+              y: -10,
               scale: 1.25,
-              rotateX: -20,
+              rotateX: -18,
               rotateY: rotY,
               rotateZ: rotZ,
+              zIndex: 30,
               textShadow:
-                '0 12px 28px rgba(182, 0, 168, 0.75), 0 2px 12px rgba(255, 255, 255, 0.95)',
+                '0 10px 25px rgba(182, 0, 168, 0.75), 0 2px 10px rgba(255, 255, 255, 0.95)',
             }
           : {
               y: 0,
@@ -76,6 +83,7 @@ const InteractiveLetter: React.FC<{
               rotateX: 0,
               rotateY: 0,
               rotateZ: 0,
+              zIndex: 1,
               textShadow: '0 0 0px transparent',
             }
       }

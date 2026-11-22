@@ -223,7 +223,7 @@ export const ResumeModal: React.FC<ResumeModalProps> = ({ isOpen, onClose }) => 
                   Achievements
                 </h2>
                 <ul className="list-disc list-inside text-xs sm:text-sm text-[#D7E2EA]/80 space-y-1 font-light">
-                  <li>Solved 500+ algorithmic problems across LeetCode, Codeforces and CodeChef covering data structures, dynamic programming, graphs and greedy algorithms.</li>
+                  <li>Solved 1000+ algorithmic problems across LeetCode, Codeforces and CodeChef covering data structures, dynamic programming, graphs and greedy algorithms.</li>
                   <li>Secured Global Rank 1326 out of 25,000+ participants in CodeChef Starters 227.</li>
                   <li>Achieved Rank 5668 in Codeforces Round 1064 (Div. 2) and Rank 7527 in LeetCode Weekly Contest 490.</li>
                 </ul>
