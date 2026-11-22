@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
 import ProjectDetailsModal, { ProjectItem } from './ProjectDetailsModal';
-import { ArrowUpRight, Github, Info } from 'lucide-react';
+import { ArrowUpRight, Github } from 'lucide-react';
 
 const projectsList: ProjectItem[] = [
   {
@@ -146,7 +146,7 @@ export const ProjectsSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Bottom Card Footer Strip (Details, GitHub & Live status) */}
+              {/* Bottom Card Footer Strip (Details & GitHub) */}
               <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-[#0e0f12]/95 border-t border-white/10 flex items-center justify-between text-xs font-mono">
                 <div className="flex items-center gap-2">
                   <button
@@ -155,9 +155,8 @@ export const ProjectsSection: React.FC = () => {
                       e.stopPropagation();
                       setSelectedProject(project);
                     }}
-                    className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/15 border border-white/15 text-white/85 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="px-3 py-1 rounded-full bg-white/5 hover:bg-white/15 border border-white/15 text-white/85 hover:text-white flex items-center transition-colors cursor-pointer"
                   >
-                    <Info className="w-3 h-3 text-[#B600A8]" />
                     <span>Details</span>
                   </button>
 
@@ -172,18 +171,6 @@ export const ProjectsSection: React.FC = () => {
                   >
                     <Github className="w-3 h-3" />
                   </button>
-                </div>
-
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenLink(project.liveUrl);
-                  }}
-                  className="flex items-center gap-1.5 text-emerald-400/90 hover:text-emerald-300 cursor-pointer"
-                  title="Open live website"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[11px] font-mono tracking-wider">Live</span>
                 </div>
               </div>
             </div>
