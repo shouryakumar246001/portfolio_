@@ -79,7 +79,30 @@ export const Heading3D: React.FC<Heading3DProps> = ({
             textShadow: '0 4px 20px rgba(0,0,0,0.85), 0 10px 40px rgba(182,0,168,0.25)',
           }}
         >
-          {title}
+          {title.split(' ').map((word, wordIdx) => (
+            <span key={wordIdx} className="inline-block whitespace-nowrap mx-[0.15em]">
+              {word.split('').map((char, charIdx) => (
+                <motion.span
+                  key={`${char}-${charIdx}`}
+                  className="inline-block transition-transform duration-150 cursor-pointer"
+                  whileHover={{
+                    y: -12,
+                    scale: 1.14,
+                    rotateX: -16,
+                    rotateY: (charIdx % 2 === 0 ? 1 : -1) * 12,
+                  }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 480,
+                    damping: 12,
+                    mass: 0.45,
+                  }}
+                >
+                  {char}
+                </motion.span>
+              ))}
+            </span>
+          ))}
         </h2>
 
         {subtitle && subtitleType === 'mono' && (

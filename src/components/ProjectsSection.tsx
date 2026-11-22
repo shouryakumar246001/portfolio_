@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
 import ProjectDetailsModal, { ProjectItem } from './ProjectDetailsModal';
+import Interactive3DText from './Interactive3DText';
 import { ArrowUpRight, Github } from 'lucide-react';
 
 const projectsList: ProjectItem[] = [
@@ -137,8 +138,8 @@ export const ProjectsSection: React.FC = () => {
 
                 {/* Bottom Left Title & Pill Badge (exact reference layout) */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 md:p-6 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
-                  <h3 className="font-bold text-white text-lg sm:text-xl md:text-2xl tracking-wide group-hover:text-white transition-colors">
-                    {project.name}
+                  <h3 className="font-bold text-white text-lg sm:text-xl md:text-2xl tracking-wide group-hover:text-white transition-colors pointer-events-auto">
+                    <Interactive3DText text={project.name} />
                   </h3>
                   <span className="px-3 sm:px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-mono tracking-wider">
                     {project.badge}

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Github, CheckCircle2, Layers } from 'lucide-react';
+import Interactive3DText from './Interactive3DText';
 
 export interface ProjectItem {
   number: string;
@@ -91,7 +92,7 @@ export const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">
-                {project.name}
+                <Interactive3DText text={project.name} />
               </h2>
               <p className="text-xs sm:text-sm text-[#D7E2EA]/60 uppercase tracking-widest font-mono mt-1">
                 {project.category}
