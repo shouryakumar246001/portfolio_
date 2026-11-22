@@ -10,17 +10,18 @@ export const Preloader: React.FC = () => {
     document.body.style.overflow = 'hidden';
 
     let current = 0;
+    // Slower pacing: interval raised from 28ms → 60ms, increments reduced
+    // adds ~2 extra seconds to the total loading animation
     const interval = setInterval(() => {
-      // Dynamic natural pacing from 0% to 100%
       let increment = 1;
       if (current < 25) {
-        increment = Math.floor(Math.random() * 3) + 2;
+        increment = Math.floor(Math.random() * 2) + 1;      // was 2–4
       } else if (current < 70) {
-        increment = Math.floor(Math.random() * 4) + 2;
+        increment = Math.floor(Math.random() * 2) + 1;      // was 2–5
       } else if (current < 85) {
-        increment = Math.floor(Math.random() * 2) + 1; // Slight natural dwell
+        increment = 1;                                        // slight natural dwell
       } else {
-        increment = Math.floor(Math.random() * 3) + 2;
+        increment = Math.floor(Math.random() * 2) + 1;      // was 2–4
       }
 
       current = Math.min(100, current + increment);
@@ -31,9 +32,9 @@ export const Preloader: React.FC = () => {
         setTimeout(() => {
           setIsComplete(true);
           document.body.style.overflow = '';
-        }, 280);
+        }, 400);
       }
-    }, 28);
+    }, 60);
 
     return () => {
       clearInterval(interval);
