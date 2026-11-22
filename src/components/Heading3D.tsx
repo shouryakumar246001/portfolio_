@@ -72,10 +72,11 @@ export const Heading3D: React.FC<Heading3DProps> = ({
         className="inline-block w-full cursor-default"
       >
         <h2
-          className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(2.6rem,10vw,140px)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.6)]"
+          className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(2.6rem,10vw,140px)] drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
           style={{
             transform: 'translateZ(35px)',
             transformStyle: 'preserve-3d',
+            textShadow: '0 4px 20px rgba(0,0,0,0.85), 0 10px 40px rgba(182,0,168,0.25)',
           }}
         >
           {title}
