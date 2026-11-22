@@ -105,3 +105,4 @@ export const Heading3D: React.FC<Heading3DProps> = ({
 };
 
 export default Heading3D;
+

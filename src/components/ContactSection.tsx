@@ -44,7 +44,7 @@ ${formData.message}`)}`;
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <Heading3D
-            title="Let's Build Something Together."
+            title="Let's Build Something Together"
             subtitle="I'm always interested in discussing software development, innovative projects, open-source contributions, and exciting opportunities."
             subtitleType="prose"
             className="mb-16 sm:mb-20"
