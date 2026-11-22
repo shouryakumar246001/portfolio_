@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from './FadeIn';
+import Heading3D from './Heading3D';
 import { Trophy, Award, Cpu, Terminal } from 'lucide-react';
 
 const achievementsList = [
@@ -49,14 +50,11 @@ export const AchievementsSection: React.FC = () => {
   return (
     <section id="achievements" className="bg-[#0C0C0C] py-20 sm:py-28 px-5 sm:px-8 md:px-10 select-none border-t border-[#D7E2EA]/10">
       <div className="max-w-6xl mx-auto">
-        <FadeIn delay={0} y={40} className="text-center mb-14 sm:mb-20">
-          <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(2.6rem,10vw,140px)]">
-            Achievements
-          </h2>
-          <p className="text-[#D7E2EA]/70 uppercase tracking-widest font-mono text-xs sm:text-sm mt-4">
-            Competitive Programming • Contest Rankings • Algorithmic Mastery
-          </p>
-        </FadeIn>
+        <Heading3D
+          title="Achievements"
+          subtitle="Competitive Programming • Contest Rankings • Algorithmic Mastery"
+          className="mb-14 sm:mb-20"
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {achievementsList.map((item, idx) => {

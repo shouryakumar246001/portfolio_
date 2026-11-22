@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FadeIn from './FadeIn';
+import Heading3D from './Heading3D';
 import ResumeModal from './ResumeModal';
 import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, Send } from 'lucide-react';
 
@@ -42,14 +43,12 @@ ${formData.message}`)}`;
       <footer id="contact" className="bg-[#0C0C0C] pt-24 sm:pt-32 pb-16 px-5 sm:px-8 md:px-10 border-t border-[#D7E2EA]/15 select-none relative">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <FadeIn delay={0} y={40} className="text-center mb-16 sm:mb-20">
-            <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(2.6rem,9vw,130px)]">
-              Let&apos;s Build Something Together.
-            </h2>
-            <p className="text-[#D7E2EA]/80 font-light max-w-2xl mx-auto text-sm sm:text-base md:text-lg leading-relaxed mt-5">
-              I&apos;m always interested in discussing software development, innovative projects, open-source contributions, and exciting opportunities.
-            </p>
-          </FadeIn>
+          <Heading3D
+            title="Let's Build Something Together."
+            subtitle="I'm always interested in discussing software development, innovative projects, open-source contributions, and exciting opportunities."
+            subtitleType="prose"
+            className="mb-16 sm:mb-20"
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-14 items-start">
             {/* Left Contact Information (5 cols) */}

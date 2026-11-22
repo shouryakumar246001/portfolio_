@@ -10,7 +10,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <>
-      <section className="relative min-h-screen flex flex-col justify-between overflow-hidden bg-[#0C0C0C] select-none pt-4 sm:pt-6 pb-8 sm:pb-12">
+      <section className="relative z-10 min-h-screen flex flex-col justify-between overflow-hidden bg-[#0C0C0C] select-none pt-4 sm:pt-6 pb-8 sm:pb-12">
         {/* Full-bleed interactive 3D particle cloud - seamless transition */}
         <ParticleCloud />
 

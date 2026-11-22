@@ -1,22 +1,19 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React from 'react';
 import FadeIn from './FadeIn';
-import LiveProjectButton from './LiveProjectButton';
-import { Code2, CheckCircle } from 'lucide-react';
+import Heading3D from './Heading3D';
+import { ArrowUpRight, Github } from 'lucide-react';
 
 interface ProjectItem {
   number: string;
   name: string;
   category: string;
+  badge: string;
   technologies: string[];
   description: string;
   keyFeatures: string[];
-  col1TopImage?: string;
-  col1BottomImage: string;
-  col2Image: string;
+  videoUrl: string;
   githubUrl: string;
-  liveUrl?: string;
-  liveLabel?: string;
+  liveUrl: string;
 }
 
 const projectsList: ProjectItem[] = [
@@ -24,6 +21,7 @@ const projectsList: ProjectItem[] = [
     number: '01',
     name: 'SugaCart.com',
     category: 'Multi-Vendor E-Commerce Platform',
+    badge: 'Commerce platform',
     technologies: ['Next.js 15', 'React 19', 'Redux Toolkit', 'Prisma ORM', 'Tailwind CSS v4', 'Recharts'],
     description:
       'A full-stack multi-vendor e-commerce platform supporting three distinct user roles: Buyer, Seller, and Super Admin with real-time analytics and inventory control.',
@@ -33,18 +31,16 @@ const projectsList: ProjectItem[] = [
       'URL-driven search, multicategory filtering, dynamic review modals and responsive user interfaces',
       'Implemented seller inventory control, admin merchant verification, coupons, and Recharts revenue analytics',
     ],
-    col1TopImage: 'https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&w=1200&q=80',
-    col1BottomImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
-    col2Image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1400&q=80',
-    githubUrl: 'https://github.com/shouryakumar246001',
+    videoUrl: '/sugacart-preview.mp4',
+    githubUrl: 'https://github.com/shouryakumar246001/suga-cart.com__',
     liveUrl: 'https://suga-cart-mpdl6ouw0-suggaa.vercel.app',
-    liveLabel: 'Live Demo',
   },
   {
     number: '02',
     name: 'Sneaker Authenticity Checker',
     category: 'Web Application & Product Verification',
-    technologies: ['JavaScript', 'HTML', 'CSS', 'DOM State Machine'],
+    badge: 'Product verification app',
+    technologies: ['JavaScript', 'HTML5', 'CSS3', 'DOM State Machine'],
     description:
       'A responsive web application designed to evaluate sneaker attributes and product features through a structured multi-step verification workflow.',
     keyFeatures: [
@@ -53,17 +49,15 @@ const projectsList: ProjectItem[] = [
       'Adaptive layouts across desktop, tablet, and mobile devices with zero external libraries',
       'Multi-step guided inspection flow with immediate validation results',
     ],
-    col1TopImage: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1200&q=80',
-    col1BottomImage: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80',
-    col2Image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1400&q=80',
-    githubUrl: 'https://github.com/shouryakumar246001',
+    videoUrl: '/sneaker-preview.mp4',
+    githubUrl: 'https://github.com/shouryakumar246001/sneker',
     liveUrl: 'https://sneak-on.netlify.app/',
-    liveLabel: 'Live Demo',
   },
   {
     number: '03',
     name: 'Real-Time Object Detector',
     category: 'Computer Vision & Machine Learning',
+    badge: 'Computer vision & ML',
     technologies: ['Python', 'Computer Vision', 'Machine Learning', 'OpenCV'],
     description:
       'A real-time computer vision application that detects and classifies objects from live video and static image streams through an optimized inference pipeline.',
@@ -73,154 +67,94 @@ const projectsList: ProjectItem[] = [
       'Optimized frame extraction and bounding-box drawing for high FPS classification',
       'Robust error handling and flexible camera/file source input pipelines',
     ],
-    col1BottomImage: '/obj-detect-bottom.jpg',
-    col2Image: '/obj-detect3.png',
-    githubUrl: 'https://github.com/shouryakumar246001',
-    liveUrl: 'https://github.com/shouryakumar246001',
-    liveLabel: 'View Code',
+    videoUrl: '/object-detector-preview.mp4',
+    githubUrl: 'https://github.com/shouryakumar246001/realtime-object-detector',
+    liveUrl: 'https://github.com/shouryakumar246001/realtime-object-detector',
   },
 ];
 
-interface ProjectCardProps {
-  project: ProjectItem;
-  index: number;
-  totalCards: number;
-}
-
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, totalCards }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ['start end', 'start start'],
-  });
-
-  const targetScale = 1 - (totalCards - 1 - index) * 0.03;
-  const scale = useTransform(scrollYProgress, [0, 1], [1, targetScale]);
-
-  return (
-    <div
-      ref={cardRef}
-      className="sticky top-20 md:top-28 min-h-[85vh] flex items-start justify-center"
-      style={{ top: `calc(${index * 28}px + 5rem)` }}
-    >
-      <motion.div
-        style={{ scale }}
-        className="w-full max-w-6xl rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-white/25 bg-[#0C0C0C]/85 backdrop-blur-2xl p-5 sm:p-7 md:p-9 flex flex-col justify-between shadow-[0_30px_80px_rgba(0,0,0,0.95),inset_0_1px_1px_0_rgba(255,255,255,0.12)] overflow-hidden"
-      >
-        {/* Top Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 sm:pb-6 border-b border-white/15">
-          <div className="flex items-center gap-4 sm:gap-6">
-            <span className="font-black text-[clamp(2.5rem,6vw,90px)] leading-none text-[#D7E2EA] tracking-tight">
-              {project.number}
-            </span>
-            <div className="flex flex-col">
-              <span className="text-xs sm:text-sm font-medium uppercase tracking-widest text-[#B600A8]">
-                {project.category}
-              </span>
-              <h3 className="font-medium uppercase text-[clamp(1.1rem,2.2vw,2rem)] text-[#D7E2EA] tracking-wide">
-                {project.name}
-              </h3>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <LiveProjectButton href={project.githubUrl} label="GitHub" variant="github" />
-            {project.liveUrl && (
-              <LiveProjectButton href={project.liveUrl} label={project.liveLabel || 'Live Demo'} />
-            )}
-          </div>
-        </div>
-
-        {/* Middle Description & Chips */}
-        <div className="py-4 space-y-3">
-          <p className="text-xs sm:text-sm md:text-base text-[#D7E2EA]/90 font-light leading-relaxed max-w-4xl">
-            {project.description}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {project.technologies.map((tech) => (
-              <span
-                key={tech}
-                className="px-3.5 py-1.5 rounded-full border border-white/15 bg-white/[0.04] backdrop-blur-md text-[#D7E2EA] text-[11px] sm:text-xs font-mono uppercase tracking-wider shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08)] hover:bg-white/10 transition-colors"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom Grid Images & Checklist */}
-        <div className="pt-2 sm:pt-4 grid grid-cols-1 md:grid-cols-10 gap-4 sm:gap-6 items-stretch">
-          {/* Left Column (4 cols): Images */}
-          <div className="md:col-span-4 flex flex-col gap-4 sm:gap-6 justify-between">
-            {project.col1TopImage && (
-              <div className="overflow-hidden rounded-[30px] sm:rounded-[40px] md:rounded-[45px] bg-[#181818] h-[clamp(130px,16vw,200px)] border border-white/15 relative group shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
-                <img
-                  src={project.col1TopImage}
-                  alt={`${project.name} preview 1`}
-                  loading="lazy"
-                  className="w-full h-full object-cover rounded-[30px] sm:rounded-[40px] md:rounded-[45px] group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            )}
-
-            <div className={`overflow-hidden rounded-[30px] sm:rounded-[40px] md:rounded-[45px] bg-[#181818] ${project.col1TopImage ? 'h-[clamp(150px,20vw,240px)]' : 'h-full min-h-[260px]'} border border-white/15 relative group shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]`}>
-              <img
-                src={project.col1BottomImage}
-                alt={`${project.name} preview`}
-                loading="lazy"
-                className="w-full h-full object-cover rounded-[30px] sm:rounded-[40px] md:rounded-[45px] group-hover:scale-105 transition-transform duration-500"
-              />
-            </div>
-          </div>
-
-          {/* Right Column (6 cols): Key Highlights */}
-          <div className="md:col-span-6 rounded-[30px] sm:rounded-[40px] md:rounded-[45px] bg-white/[0.03] backdrop-blur-xl border border-white/15 p-5 sm:p-7 flex flex-col justify-between overflow-hidden relative shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08)]">
-            <div>
-              <div className="flex items-center gap-2 mb-3 text-xs font-mono uppercase tracking-widest text-[#BBCCD7]">
-                <Code2 className="w-4 h-4 text-[#B600A8]" />
-                Key Engineering Highlights
-              </div>
-              <ul className="space-y-2.5">
-                {project.keyFeatures.map((feature, fIdx) => (
-                  <li key={fIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#D7E2EA]/80 font-light leading-snug">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-[#D7E2EA]/10 flex items-center justify-between text-xs font-mono text-[#D7E2EA]/60">
-              <span>Status: Verified Production Code</span>
-              <span className="text-emerald-400">● Active</span>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
-
 export const ProjectsSection: React.FC = () => {
+  const handleOpenProject = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <section
       id="projects"
-      className="relative bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 z-10 px-4 sm:px-8 md:px-10 pt-20 sm:pt-24 md:pt-32 pb-32 select-none"
+      className="relative z-10 px-4 sm:px-6 md:px-10 pt-20 sm:pt-24 md:pt-32 pb-32 select-none"
     >
-      <FadeIn delay={0} y={40} className="text-center mb-16 sm:mb-20 md:mb-28">
-        <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(3rem,12vw,160px)]">
-          Projects
-        </h2>
-        <p className="text-[#D7E2EA]/70 uppercase tracking-widest font-mono text-xs sm:text-sm mt-4">
-          Featured Engineering Work • Full-Stack • Computer Vision
-        </p>
-      </FadeIn>
+      {/* Section Header */}
+      <Heading3D
+        title="Projects"
+        subtitle="Featured Engineering Work • Full-Stack • Computer Vision"
+        className="mb-12 sm:mb-16 md:mb-20"
+      />
 
-      <div className="relative flex flex-col gap-12 sm:gap-16">
-        {projectsList.map((project, idx) => (
-          <ProjectCard key={project.number} project={project} index={idx} totalCards={projectsList.length} />
-        ))}
-      </div>
+      {/* 3-Card Video Showcase Grid (matching reference design) */}
+      <FadeIn delay={0.15} y={30}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 lg:gap-8 max-w-7xl mx-auto">
+          {projectsList.map((project) => (
+            <div
+              key={project.number}
+              onClick={() => handleOpenProject(project.liveUrl)}
+              className="relative group rounded-[26px] sm:rounded-[30px] md:rounded-[34px] overflow-hidden border border-white/15 hover:border-white/40 bg-[#121316]/85 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:shadow-[0_25px_60px_rgba(182,0,168,0.35),0_0_25px_rgba(255,255,255,0.12)] transition-all duration-300 hover:-translate-y-2 cursor-pointer flex flex-col"
+              title={`Click to open ${project.name}`}
+            >
+              {/* Video Container (16:10 aspect ratio matching screenshot) */}
+              <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#181818]">
+                <video
+                  src={project.videoUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+
+                {/* Subtle dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C]/95 via-transparent to-black/20 pointer-events-none" />
+
+                {/* Top-Right Actions (GitHub + Direct Open Link Arrow) */}
+                <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenProject(project.githubUrl);
+                    }}
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/80 hover:text-white hover:bg-black/90 hover:border-white/40 transition-all duration-200 shadow-lg cursor-pointer"
+                    title={`View ${project.name} on GitHub`}
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                  </button>
+
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenProject(project.liveUrl);
+                    }}
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:bg-[#B600A8] shadow-lg cursor-pointer"
+                    title={`Click to open ${project.name}`}
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                </div>
+
+                {/* Bottom Left Title & Pill Badge (exact reference layout) */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 md:p-6 flex flex-col items-start gap-1.5 z-10 pointer-events-none">
+                  <h3 className="font-bold text-white text-lg sm:text-xl md:text-2xl tracking-wide group-hover:text-white transition-colors">
+                    {project.name}
+                  </h3>
+                  <span className="px-3 sm:px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-xs sm:text-sm font-mono tracking-wider">
+                    {project.badge}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </FadeIn>
     </section>
   );
 };

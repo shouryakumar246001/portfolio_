@@ -29,3 +29,18 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Starry universe styling: keeps website completely black while letting the starry background shine through */
+.starry-universe section:not(#skills),
+.starry-universe footer {
+  background-color: transparent !important;
+}
+
+.starry-universe #projects {
+  margin-top: 0 !important;
+}
+
+.starry-universe #skills {
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}

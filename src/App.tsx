@@ -2,6 +2,7 @@ import React from 'react';
 import Preloader from './components/Preloader';
 import BlackCursor from './components/BlackCursor';
 import HeroSection from './components/HeroSection';
+import StarBackground from './components/StarBackground';
 import KeycapSkillsSection from './components/KeycapSkillsSection';
 import MarqueeSection from './components/MarqueeSection';
 import AboutSection from './components/AboutSection';
@@ -17,14 +18,17 @@ export const App: React.FC = () => {
       <Preloader />
       <BlackCursor />
       <HeroSection />
-      <KeycapSkillsSection />
-      <MarqueeSection />
-      <AboutSection />
-      <SkillsSection />
-      <ProjectsSection />
-      <ExperienceSection />
-      <AchievementsSection />
-      <ContactSection />
+      <div className="starry-universe relative z-0">
+        <StarBackground />
+        <KeycapSkillsSection />
+        <MarqueeSection />
+        <AboutSection />
+        <SkillsSection />
+        <ProjectsSection />
+        <ExperienceSection />
+        <AchievementsSection />
+        <ContactSection />
+      </div>
     </div>
   );
 };

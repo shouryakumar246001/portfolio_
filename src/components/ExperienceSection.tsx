@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeIn from './FadeIn';
+import Heading3D from './Heading3D';
 import { GitPullRequest, Award, Calendar, MapPin, CheckCircle } from 'lucide-react';
 
 const experiencesList = [
@@ -37,14 +38,11 @@ export const ExperienceSection: React.FC = () => {
   return (
     <section id="experience" className="bg-[#0C0C0C] py-24 sm:py-32 px-5 sm:px-8 md:px-10 select-none">
       <div className="max-w-5xl mx-auto">
-        <FadeIn delay={0} y={40} className="text-center mb-16 sm:mb-24">
-          <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-[clamp(3rem,12vw,160px)]">
-            Experience
-          </h2>
-          <p className="text-[#D7E2EA]/70 uppercase tracking-widest font-mono text-xs sm:text-sm mt-4">
-            Engineering Contributions • Leadership • Coordination
-          </p>
-        </FadeIn>
+        <Heading3D
+          title="Experience"
+          subtitle="Engineering Contributions • Leadership • Coordination"
+          className="mb-16 sm:mb-24"
+        />
 
         <div className="relative border-l-2 border-[#D7E2EA]/20 ml-4 sm:ml-8 md:ml-12 pl-6 sm:pl-10 space-y-12 sm:space-y-16">
           {experiencesList.map((exp, idx) => {
