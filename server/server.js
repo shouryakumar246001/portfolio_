@@ -152,7 +152,7 @@ app.post('/api/contact', async (req, res) => {
     // Method 2: FormSubmit dispatch fallback
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 22000);
       const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {

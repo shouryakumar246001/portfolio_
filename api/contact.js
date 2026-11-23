@@ -89,7 +89,7 @@ export default async function handler(req, res) {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    const timeoutId = setTimeout(() => controller.abort(), 22000);
     let formSubmitResponse;
     try {
       formSubmitResponse = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
