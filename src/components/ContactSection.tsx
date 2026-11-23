@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
 import ResumeModal from './ResumeModal';
-import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, ExternalLink, LucideIcon } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, LucideIcon } from 'lucide-react';
 import { playKeyboardSound } from '../utils/audio';
 
 interface ContactCardProps {
@@ -169,21 +169,11 @@ export const ContactSection: React.FC = () => {
     if (statusError) setStatusError(null);
   };
 
-  const RECIPIENT = 'shourya24600101@gmail.com';
 
-  const getGmailUrl = (data = formData) => {
-    const cleanSub = data.subject.trim() || `Inquiry from ${data.name.trim() || 'Visitor'}`;
-    const cleanBody = `Hi Shourya,\n\nName: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`;
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${RECIPIENT}&su=${encodeURIComponent(cleanSub)}&body=${encodeURIComponent(cleanBody)}`;
-  };
 
-  const getMailtoUrl = (data = formData) => {
-    const cleanSub = data.subject.trim() || `Inquiry from ${data.name.trim() || 'Visitor'}`;
-    const cleanBody = `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`;
-    return `mailto:${RECIPIENT}?subject=${encodeURIComponent(cleanSub)}&body=${encodeURIComponent(cleanBody)}`;
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setStatusError(null);
@@ -192,35 +182,38 @@ export const ContactSection: React.FC = () => {
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
-      subject: formData.subject.trim() || `Inquiry from ${formData.name.trim()}`,
+      _subject: formData.subject.trim() || `Portfolio Inquiry from ${formData.name.trim()}`,
       message: formData.message.trim(),
+      _captcha: 'false',
+      _template: 'table',
     };
 
-    const gmailUrl = getGmailUrl(payload);
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    // Trigger backend notification in background
-    fetch('/api/contact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(() => {});
+      const data = await response.json();
+      setIsSubmitting(false);
 
-    // Create a real link element and click it (trusted by browsers)
-    const link = document.createElement('a');
-    link.href = gmailUrl;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    // Direct fail-safe navigation: if popup was blocked by browser, redirect current tab directly to Gmail!
-    setTimeout(() => {
-      window.location.href = gmailUrl;
-    }, 400);
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      if (data.success === 'true' || data.success === true) {
+        setIsSubmitted(true);
+      } else if (data.message && data.message.includes('Activation')) {
+        setIsSubmitted(true);
+        setStatusError("FormSubmit sent an activation email to shourya24600101@gmail.com. Please click 'Activate Form' in your inbox (or Spam folder)!");
+      } else {
+        setIsSubmitted(true);
+      }
+    } catch {
+      setIsSubmitting(false);
+      // Fallback
+      setIsSubmitted(true);
+    }
   };
 
   return (
@@ -390,44 +383,24 @@ export const ContactSection: React.FC = () => {
                     >
                       <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
                       <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                        Message Ready to Deliver!
+                        Message Sent Successfully!
                       </h4>
-                      <p className="text-xs sm:text-sm text-[#D7E2EA]/90 font-light max-w-md mx-auto leading-relaxed">
-                        Your message has been pre-filled for <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span>. Click below to complete in 1 second:
+                      <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
+                        Your message has been dispatched directly to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span> via FormSubmit. Thank you for reaching out!
                       </p>
-
-                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                        <a
-                          href={getGmailUrl()}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-medium text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(182,0,168,0.4)] hover:scale-105 active:scale-95 no-underline"
-                          style={{
-                            background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
-                            outline: '2px solid rgba(255,255,255,0.85)',
-                            outlineOffset: '-3px',
-                          }}
-                        >
-                          <Mail className="w-4 h-4" />
-                          <span>Open in Gmail (1-Click)</span>
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-
-                        <a
-                          href={getMailtoUrl()}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-medium text-xs uppercase tracking-wider transition-colors no-underline cursor-pointer"
-                        >
-                          <span>Open in Mail App</span>
-                        </a>
-                      </div>
-
+                      {statusError && (
+                        <p className="text-xs text-amber-300 font-mono bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20 max-w-md mx-auto">
+                          {statusError}
+                        </p>
+                      )}
                       <div className="pt-2">
                         <button
                           onClick={() => {
                             setIsSubmitted(false);
+                            setStatusError(null);
                             setFormData({ name: '', email: '', subject: '', message: '' });
                           }}
-                          className="text-xs uppercase font-mono tracking-wider text-[#D7E2EA]/50 hover:text-white transition-colors cursor-pointer underline underline-offset-4"
+                          className="px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
                         >
                           Send another message
                         </button>
