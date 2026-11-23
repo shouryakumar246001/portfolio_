@@ -5,12 +5,14 @@ import React, { useEffect, useRef } from 'react';
  * - Inner dot: snaps instantly to the mouse position (no lag).
  * - Outer ring: follows with a smooth spring-like trail effect.
  * - On hover over interactive elements: ring expands, dot shrinks, ring colour shifts to magenta.
+ * - On VHS book covers: ring turns blue with an "OPEN" label.
  * - On click/press: both layers scale down for a tactile press-down feel.
  * - Works only on devices with a fine pointer (desktop mouse); hides on touch devices.
  */
 export const GlobalCursor: React.FC = () => {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) return;
@@ -23,6 +25,7 @@ export const GlobalCursor: React.FC = () => {
     let ringX = -200;
     let ringY = -200;
     let isPointer = false;
+    let isVHSBook = false;
     let isPressed = false;
     let rafId: number;
 
@@ -32,6 +35,10 @@ export const GlobalCursor: React.FC = () => {
 
       const target = e.target as HTMLElement | null;
       if (target) {
+        // Check for VHS book covers first (special blue ring)
+        const vhsHit = target.closest('[data-cover], .vhs-cover-open-badge, .vhs-center-play-btn');
+        isVHSBook = !!vhsHit;
+        // Check for general interactive elements
         const interactive = target.closest('a, button, [role="button"], input, textarea, select, .cursor-pointer, label');
         isPointer = !!interactive;
       }
@@ -50,6 +57,9 @@ export const GlobalCursor: React.FC = () => {
       isPressed = false;
     };
     const onMouseLeave = () => {
+      // Reset pointer state when cursor leaves the window
+      isPointer = false;
+      isVHSBook = false;
       if (dotRef.current) dotRef.current.style.opacity = '0';
       if (ringRef.current) ringRef.current.style.opacity = '0';
     };
@@ -67,21 +77,35 @@ export const GlobalCursor: React.FC = () => {
       ringY = lerp(ringY, mouseY, SPEED);
 
       if (ringRef.current) {
-        const size = isPointer ? 44 : 32;
+        const size = isVHSBook ? 56 : isPointer ? 44 : 32;
         const half = size / 2;
         ringRef.current.style.transform = `translate3d(${ringX - half}px, ${ringY - half}px, 0)`;
         ringRef.current.style.width = `${size}px`;
         ringRef.current.style.height = `${size}px`;
-        ringRef.current.style.borderColor = isPointer ? 'rgba(182,0,168,0.85)' : 'rgba(215,226,234,0.55)';
-        ringRef.current.style.boxShadow = isPointer
-          ? '0 0 14px rgba(182,0,168,0.5)'
-          : '0 0 6px rgba(0,0,0,0.5)';
+
+        if (isVHSBook) {
+          ringRef.current.style.borderColor = 'rgba(255,255,255,0.9)';
+          ringRef.current.style.background = 'rgba(31,63,176,0.75)';
+          ringRef.current.style.boxShadow = '0 0 20px rgba(31,63,176,0.8)';
+        } else if (isPointer) {
+          ringRef.current.style.borderColor = 'rgba(182,0,168,0.85)';
+          ringRef.current.style.background = 'transparent';
+          ringRef.current.style.boxShadow = '0 0 14px rgba(182,0,168,0.5)';
+        } else {
+          ringRef.current.style.borderColor = 'rgba(215,226,234,0.55)';
+          ringRef.current.style.background = 'transparent';
+          ringRef.current.style.boxShadow = '0 0 6px rgba(0,0,0,0.5)';
+        }
+      }
+
+      if (labelRef.current) {
+        labelRef.current.style.opacity = isVHSBook ? '1' : '0';
       }
 
       if (dotRef.current) {
-        const dotScale = isPressed ? 0.5 : isPointer ? 0.3 : 1;
+        const dotScale = isPressed ? 0.5 : (isPointer || isVHSBook) ? 0.3 : 1;
         dotRef.current.style.scale = `${dotScale}`;
-        dotRef.current.style.background = isPointer ? '#B600A8' : '#ffffff';
+        dotRef.current.style.background = isVHSBook ? '#ffffff' : isPointer ? '#B600A8' : '#ffffff';
       }
 
       rafId = requestAnimationFrame(animate);
@@ -112,7 +136,7 @@ export const GlobalCursor: React.FC = () => {
       <div
         ref={ringRef}
         aria-hidden
-        className="fixed top-0 left-0 pointer-events-none z-[9999999] rounded-full border-[1.5px] transition-[border-color,box-shadow,width,height] duration-150 will-change-transform"
+        className="fixed top-0 left-0 pointer-events-none z-[9999999] rounded-full border-[1.5px] transition-[border-color,box-shadow,background,width,height] duration-150 will-change-transform flex items-center justify-center"
         style={{
           width: '32px',
           height: '32px',
@@ -121,7 +145,15 @@ export const GlobalCursor: React.FC = () => {
           transform: 'translate3d(-200px, -200px, 0)',
           opacity: 0,
         }}
-      />
+      >
+        <span
+          ref={labelRef}
+          className="text-[8px] font-bold text-white uppercase tracking-widest select-none"
+          style={{ opacity: 0, transition: 'opacity 0.15s ease', letterSpacing: '0.06em', pointerEvents: 'none' }}
+        >
+          OPEN
+        </span>
+      </div>
       {/* Inner sharp dot — snaps instantly */}
       <div
         ref={dotRef}

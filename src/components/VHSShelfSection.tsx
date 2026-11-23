@@ -89,7 +89,7 @@ function cropStyle(sheetKey: string, box: [number, number, number, number]): Rea
 export const VHSShelfSection: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const shelfRef = useRef<HTMLDivElement>(null);
-  const cursorRingRef = useRef<HTMLDivElement>(null);
+  // cursorRingRef removed — GlobalCursor handles the site-wide custom cursor
   const detailRef = useRef<HTMLDivElement>(null);
   const captionTitleRef = useRef<HTMLDivElement>(null);
   const captionSubRef = useRef<HTMLDivElement>(null);
@@ -397,34 +397,7 @@ export const VHSShelfSection: React.FC = () => {
     const st = stateRef.current;
     st.lastMx = e.clientX;
     st.lastMy = e.clientY;
-
-    const cursorEl = cursorRingRef.current;
-    if (!cursorEl) return;
-    cursorEl.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`;
-
-    const target = document.elementFromPoint(e.clientX, e.clientY);
-    const isCoverOrBtn = target?.closest('[data-cover], .vhs-center-play-btn, .vhs-cover-open-badge');
-
-    if (isCoverOrBtn) {
-      cursorEl.style.width = '72px';
-      cursorEl.style.height = '72px';
-      cursorEl.style.background = '#1F3FB0';
-      cursorEl.style.borderColor = '#ffffff';
-      cursorEl.style.boxShadow = '0 0 30px rgba(31,63,176,0.85)';
-      const lbl = cursorEl.querySelector<HTMLElement>('.cursor-label');
-      if (lbl) {
-        lbl.style.opacity = '1';
-        lbl.textContent = 'OPEN';
-      }
-    } else {
-      cursorEl.style.width = '36px';
-      cursorEl.style.height = '36px';
-      cursorEl.style.background = 'transparent';
-      cursorEl.style.borderColor = '#D7E2EA88';
-      cursorEl.style.boxShadow = 'none';
-      const lbl = cursorEl.querySelector<HTMLElement>('.cursor-label');
-      if (lbl) lbl.style.opacity = '0';
-    }
+    // GlobalCursor handles all cursor visuals — no internal cursor ring needed
   }, []);
 
   // ── Wheel scroll ────────────────────────────────────────────────────────────
@@ -871,27 +844,7 @@ export const VHSShelfSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Custom cursor ring — only on pointer:fine devices */}
-      <div
-        ref={cursorRingRef}
-        aria-hidden
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] flex items-center justify-center transition-[width,height,background,border-color,box-shadow] duration-150"
-        style={{
-          width: '36px',
-          height: '36px',
-          border: '1.5px solid #D7E2EA88',
-          background: 'transparent',
-          transform: 'translate(-9999px, -9999px)',
-          display: window.matchMedia('(pointer: fine)').matches ? 'flex' : 'none',
-        }}
-      >
-        <span
-          className="cursor-label text-[9px] font-bold text-white uppercase tracking-widest"
-          style={{ opacity: 0, transition: 'opacity 0.2s ease', letterSpacing: '0.08em' }}
-        >
-          OPEN
-        </span>
-      </div>
+      {/* Custom cursor ring removed — GlobalCursor handles site-wide cursor */}
 
       {/* Detail overlay */}
       <div
