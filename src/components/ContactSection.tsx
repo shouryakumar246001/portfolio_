@@ -354,7 +354,7 @@ export const ContactSection: React.FC = () => {
                   onMouseEnter={() => playKeyboardSound(3, false)}
                   whileHover={{ y: -3, scale: 1.03 }}
                   whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#0077B5]/60 bg-[#121316]/95 hover:bg-white/[0.08] shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)] text-xs uppercase tracking-wider font-medium text-white transition-all no-underline group cursor-pointer"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#0077B5]/60 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
                 >
                   <Linkedin className="w-4 h-4 text-[#0077B5] group-hover:scale-110 transition-transform" />
                   <span>LinkedIn Profile</span>
@@ -367,7 +367,7 @@ export const ContactSection: React.FC = () => {
                   onMouseEnter={() => playKeyboardSound(4, false)}
                   whileHover={{ y: -3, scale: 1.03 }}
                   whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-white/40 bg-[#121316]/95 hover:bg-white/[0.08] shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)] text-xs uppercase tracking-wider font-medium text-white transition-all no-underline group cursor-pointer"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-white/40 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
                 >
                   <Github className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
                   <span>GitHub Profile</span>
@@ -380,7 +380,7 @@ export const ContactSection: React.FC = () => {
                   onMouseEnter={() => playKeyboardSound(5, false)}
                   whileHover={{ y: -3, scale: 1.03 }}
                   whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#F97316]/60 bg-[#121316]/95 hover:bg-white/[0.08] shadow-[0_8px_20px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)] text-xs uppercase tracking-wider font-medium text-white transition-all no-underline group cursor-pointer"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#F97316]/60 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
                 >
                   <img src="/codolio.png" alt="Codolio" className="w-4 h-4 object-contain group-hover:scale-110 transition-transform" />
                   <span>Codolio Profile</span>
@@ -400,7 +400,7 @@ export const ContactSection: React.FC = () => {
                   onMouseEnter={() => playKeyboardSound(6, false)}
                   whileHover={{ y: -3, scale: 1.03 }}
                   whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/70 shadow-[0_8px_20px_rgba(16,185,129,0.25),inset_0_1px_1px_rgba(255,255,255,0.15)] text-xs uppercase tracking-wider font-medium text-emerald-300 transition-all cursor-pointer group"
+                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-emerald-500/50 bg-[#091411] hover:bg-[#0d1c17] hover:border-emerald-500/70 text-xs uppercase tracking-wider font-medium text-emerald-300 transition-colors cursor-pointer group"
                 >
                   <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
                   <span>Download Resume</span>
@@ -408,8 +408,11 @@ export const ContactSection: React.FC = () => {
               </div>
             </FadeIn>
 
-            {/* Right Contact Form (7 cols) */}
+            {/* Right Contact Form (7 cols) — Spider Gwen stands beside this */}
             <FadeIn delay={0.25} y={30} className="lg:col-span-7">
+              {/* Outer wrapper: relative so Spider Gwen can be positioned outside the card */}
+              <div className="relative">
+
               <div style={{ perspective: 1200 }}>
                 <motion.div
                   ref={formCardRef}
@@ -706,6 +709,7 @@ export const ContactSection: React.FC = () => {
                   )}
                 </motion.div>
               </div>
+              </div>{/* end relative wrapper for Spider Gwen */}
             </FadeIn>
           </div>
 

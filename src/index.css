@@ -15,6 +15,10 @@
     }
   }
 
+  html, body {
+    cursor: url('/robot-hand-cursor.png') 4 4, url('/robot-hand-cursor.cur') 4 4, auto;
+  }
+
   html, body, #root {
     background-color: #0C0C0C;
     font-family: 'Kanit', sans-serif;

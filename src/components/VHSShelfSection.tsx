@@ -98,10 +98,10 @@ export const VHSShelfSection: React.FC = () => {
 
   // State managed imperatively via refs for the rAF loop
   const stateRef = useRef({
-    s: 5 + N,            // current active index (noon = 5, in middle copy)
-    sTarget: 5 + N,     // spring target
+    s: 3 + N,            // start on the fourth book from the left (The Last Summer)
+    sTarget: 3 + N,     // spring target
     vel: 0,             // spring velocity
-    activeFilmIdx: 5,   // actual film index (0-11)
+    activeFilmIdx: 3,   // actual film index (0-11)
     decade: 'ALL',
     isOpen: false,       // detail view open
     isDragging: false,
@@ -256,18 +256,19 @@ export const VHSShelfSection: React.FC = () => {
         spineEl.style.transform = 'rotateY(-90deg)';
 
         coverEl.style.opacity = '1';
-        coverEl.style.transform = 'rotateY(0deg) rotateZ(-2.5deg) translateZ(28px)';
+        coverEl.style.transform = 'rotateY(0deg) rotateZ(0deg) translateZ(28px)';
         coverEl.style.width = `${coverW}px`;
         coverEl.style.height = `${H}px`;
         coverEl.style.overflow = 'visible';
 
         if (playRingEl) {
-          playRingEl.style.opacity = '1';
-          playRingEl.style.transform = 'translate(-50%, -50%) scale(1)';
-          playRingEl.style.pointerEvents = 'auto';
+          playRingEl.style.opacity = '0';
+          playRingEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
+          playRingEl.style.pointerEvents = 'none';
+          playRingEl.style.display = 'none';
         }
         if (badgeEl) {
-          badgeEl.style.display = 'flex';
+          badgeEl.style.display = 'none';
         }
       } else {
         // Show narrow spine
@@ -287,6 +288,7 @@ export const VHSShelfSection: React.FC = () => {
           playRingEl.style.opacity = '0';
           playRingEl.style.transform = 'translate(-50%, -50%) scale(0.5)';
           playRingEl.style.pointerEvents = 'none';
+          playRingEl.style.display = 'none';
         }
         if (badgeEl) {
           badgeEl.style.display = 'none';
@@ -363,7 +365,8 @@ export const VHSShelfSection: React.FC = () => {
       return;
     }
     const viewW = shelfEl.parentElement?.clientWidth ?? window.innerWidth;
-    const activeCenterX = st.s * spineW + (coverW - spineW) / 2 + coverW / 2;
+    // Center the open cover itself, not the spine grid coordinate.
+    const activeCenterX = Math.floor(st.s * spineW) + coverW / 2;
     const offsetX = viewW / 2 - activeCenterX;
 
     shelfEl.style.transform = `translateX(${offsetX}px)`;
@@ -585,7 +588,7 @@ export const VHSShelfSection: React.FC = () => {
         whiteSpace: 'nowrap',
       });
       coverBadge.innerHTML = `
-        <span style="font-family:'Kanit',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.06em;color:#ffffff;text-transform:uppercase;">Click to Read</span>
+        <span style="font-family:'Kanit',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.06em;color:#ffffff;text-transform:uppercase;">Click to Read the Book</span>
         <span style="font-family:monospace;font-size:8.5px;color:#D7E2EA88;text-transform:uppercase;background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:9999px;">Single Click</span>
       `;
       coverBadge.addEventListener('mouseenter', () => {
@@ -642,7 +645,12 @@ export const VHSShelfSection: React.FC = () => {
 
     st.tapeEls = tapes;
 
-    // Set initial caption without animation
+    // Always open the fourth book from the left (The Last Summer) on first load.
+    st.s = 3 + N;
+    st.sTarget = 3 + N;
+    st.activeFilmIdx = 3;
+    st.vel = 0;
+
     setCaption(st.activeFilmIdx, false);
     updateTapeVisuals(st.s);
 
@@ -761,17 +769,18 @@ export const VHSShelfSection: React.FC = () => {
           maxHeight: '340px',
         }}
       >
-        {/* Left arrow */}
+        {/* Play/read button moved to the left side of the shelf */}
         <button
+          type="button"
           onClick={() => {
-            playKeyboardSound(2, false);
-            setActive(stateRef.current.sTarget - 1);
+            playKeyboardSound(0, true);
+            openDetail(stateRef.current.activeFilmIdx);
           }}
-          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full border border-[#D7E2EA]/20 bg-black/60 backdrop-blur-md flex items-center justify-center text-[#D7E2EA]/70 hover:text-[#D7E2EA] hover:border-[#D7E2EA]/50 hover:bg-[#1F3FB0]/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg"
-          aria-label="Previous film"
-          title="Previous Book"
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/30 bg-black/70 backdrop-blur-md flex items-center justify-center text-white hover:text-white hover:border-white/70 hover:bg-[#1F3FB0]/90 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.7),0_0_24px_rgba(31,63,176,0.28)]"
+          aria-label="Read the selected book"
+          title="Click to Read the Book"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white" style={{ marginLeft: '2.5px' }}><path d="M8 5v14l11-7z" /></svg>
         </button>
 
         {/* Right arrow */}

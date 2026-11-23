@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js';
 
@@ -13,6 +13,7 @@ uniform sampler2D textureRandom;
 uniform sampler2D uFluidVelocity;
 uniform sampler2D uFluidDensity;
 uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uCameraWorldMatrix;
 
@@ -85,7 +86,8 @@ void main() {
 
   // 5. Cursor fluid interaction in 3D
   vec4 worldPos = uModelMatrix * vec4(pos, 1.0);
-  vec4 clipPos = uProjectionMatrix * worldPos;
+  vec4 viewPos = uViewMatrix * worldPos;
+  vec4 clipPos = uProjectionMatrix * viewPos;
   vec2 screenUV = (clipPos.xy / clipPos.w) * 0.5 + 0.5;
 
   if (screenUV.x >= 0.0 && screenUV.x <= 1.0 && screenUV.y >= 0.0 && screenUV.y <= 1.0) {
@@ -227,6 +229,7 @@ void main() {
 export const ParticleCloud: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isMoonLoaded, setIsMoonLoaded] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -254,15 +257,36 @@ export const ParticleCloud: React.FC = () => {
     camera.position.copy(baseCamPos);
     camera.lookAt(0, 0, 0);
 
-    // Complete 3D Donut - centered, full-bleed across screen
+    // Complete 3D Donut - centered, perfectly proportioned so no parts are cut off
     const pointsGroup = new THREE.Group();
-    pointsGroup.position.set(0, 0.12, 0);
     pointsGroup.rotation.set(
       (-32 * Math.PI) / 180,
       (22 * Math.PI) / 180,
       (6 * Math.PI) / 180
     );
-    pointsGroup.scale.set(4.8, 4.8, 4.8);
+
+    const majorR = 0.46;
+    const minorR = 0.17;
+
+    const updateDonutFit = () => {
+      const aspect = width / height;
+      const fovRad = (camera.fov * Math.PI) / 180;
+      const visibleH = 2 * Math.tan(fovRad / 2) * baseCamPos.z;
+      const visibleW = visibleH * aspect;
+
+      // Total outer donut diameter = 2 * (majorR + minorR) = 2 * (0.46 + 0.17) = 1.26
+      const torusDiameter = (majorR + minorR) * 2;
+      // Fit completely within viewport bounds with balanced margins so 100% of the donut is visible
+      const maxAllowedH = visibleH * 0.83;
+      const maxAllowedW = visibleW * 0.85;
+      const fitDim = Math.min(maxAllowedH, maxAllowedW);
+      const s = Math.max(0.88, Math.min(2.15, fitDim / torusDiameter));
+
+      pointsGroup.scale.set(s, s, s);
+      pointsGroup.position.set(0, 0.05, 0);
+    };
+
+    updateDonutFit();
     scene.add(pointsGroup);
 
     // Mouse Tracking & Gaze
@@ -342,7 +366,7 @@ export const ParticleCloud: React.FC = () => {
 
     // Particle GPGPU setup (65,536 particles forming a dense starry torus)
     const isMobile = width <= 768;
-    const SIM_WIDTH = isMobile ? 128 : 256;
+    const SIM_WIDTH = isMobile ? 144 : 288;
     const TOTAL_PARTICLES = SIM_WIDTH * SIM_WIDTH;
 
     const gpuCompute = new GPUComputationRenderer(SIM_WIDTH, SIM_WIDTH, renderer);
@@ -357,9 +381,6 @@ export const ParticleCloud: React.FC = () => {
     const posArr = dtPosition.image.data as Float32Array;
     const origArr = dtOrigin.image.data as Float32Array;
     const randArr = dtRandom.image.data as Float32Array;
-
-    const majorR = 0.46;
-    const minorR = 0.17;
 
     for (let i = 0; i < TOTAL_PARTICLES; i++) {
       const i4 = i * 4;
@@ -397,6 +418,7 @@ export const ParticleCloud: React.FC = () => {
     posVariable.material.uniforms.uFluidVelocity = { value: velFBO1.texture };
     posVariable.material.uniforms.uFluidDensity = { value: denFBO1.texture };
     posVariable.material.uniforms.uModelMatrix = { value: pointsGroup.matrixWorld };
+    posVariable.material.uniforms.uViewMatrix = { value: camera.matrixWorldInverse };
     posVariable.material.uniforms.uProjectionMatrix = { value: camera.projectionMatrix };
     posVariable.material.uniforms.uCameraWorldMatrix = { value: camera.matrixWorld };
 
@@ -457,6 +479,7 @@ export const ParticleCloud: React.FC = () => {
       height = container.clientHeight || window.innerHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      updateDonutFit();
       renderer.setSize(width, height);
       pointMaterial.uniforms.uDPR.value = Math.min(window.devicePixelRatio, 2);
       splatMat.uniforms.uAspect.value = width / height;
@@ -477,6 +500,7 @@ export const ParticleCloud: React.FC = () => {
       // Camera gaze
       camera.position.lerp(targetCamPos, 0.05);
       camera.lookAt(0, 0, 0);
+
 
       // Fluid Simulation
       if (mouse.speed > 0.0001 && now - mouse.lastMoveTime < 100) {
@@ -523,11 +547,13 @@ export const ParticleCloud: React.FC = () => {
 
       // GPGPU Simulation Step
       pointsGroup.updateMatrixWorld();
+      camera.updateMatrixWorld();
       posVariable.material.uniforms.uTime.value = now * 0.001;
       posVariable.material.uniforms.uHZ.value = HZ;
       posVariable.material.uniforms.uFluidVelocity.value = velFBO1.texture;
       posVariable.material.uniforms.uFluidDensity.value = denFBO1.texture;
       posVariable.material.uniforms.uModelMatrix.value = pointsGroup.matrixWorld;
+      posVariable.material.uniforms.uViewMatrix.value = camera.matrixWorldInverse;
       posVariable.material.uniforms.uProjectionMatrix.value = camera.projectionMatrix;
       posVariable.material.uniforms.uCameraWorldMatrix.value = camera.matrixWorld;
 
@@ -555,7 +581,22 @@ export const ParticleCloud: React.FC = () => {
 
   return (
     <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-auto">
-      <canvas ref={canvasRef} className="w-full h-full block cursor-grab active:cursor-grabbing" />
+      <canvas ref={canvasRef} className="absolute inset-0 z-[1] w-full h-full block cursor-grab active:cursor-grabbing" />
+
+      <div className="absolute left-1/2 top-[51%] z-[3] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+        <div
+          className={`relative h-[150px] w-[150px] overflow-hidden rounded-full bg-transparent sm:h-[190px] sm:w-[190px] md:h-[220px] md:w-[220px] lg:h-[240px] lg:w-[240px] transition-all duration-700 ease-out ${isMoonLoaded ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-0'}`}
+        >
+          <iframe
+            title="Moon 3D Model"
+            src="https://sketchfab.com/models/870de693475d436c8e925ab0bcda4ca4/embed?autostart=1&transparent=1&ui_theme=dark&ui_controls=0&ui_infos=0&ui_watermark=0&ui_stop=0&ui_hint=0&ui_help=0&ui_settings=0&ui_fullscreen=0&ui_vr=0&ui_annotations=0&annotations_visible=false&ui_loading=0&preload=1&scrollwheel=0"
+            onLoad={() => setIsMoonLoaded(true)}
+            className="absolute inset-0 h-full w-full border-0 rounded-full overflow-hidden pointer-events-none"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            style={{ background: 'transparent', border: 'none', outline: 'none', filter: 'contrast(1.08) brightness(0.94) saturate(0.82)' }}
+          />
+        </div>
+      </div>
     </div>
   );
 };

@@ -40,7 +40,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <>
-      <section className="relative z-10 min-h-screen flex flex-col justify-between overflow-hidden bg-[#0C0C0C] select-none pt-4 sm:pt-6 pb-8 sm:pb-12">
+      <section className="relative z-10 min-h-screen flex flex-col justify-between overflow-hidden bg-transparent select-none pt-4 sm:pt-6 pb-8 sm:pb-12">
         {/* Full-bleed interactive 3D particle cloud - seamless transition */}
         <ParticleCloud />
 
@@ -98,7 +98,7 @@ export const HeroSection: React.FC = () => {
           </nav>
         </FadeIn>
 
-        {/* Hero Heading: "Hi, I'm Shourya Kumar." with 3D depth and original design */}
+        {/* Hero Heading: "Hi, I'm Shourya." with 3D depth and original design */}
         <div
           ref={heroHeadingRef}
           className="w-full overflow-hidden mt-6 sm:mt-4 md:mt-2 z-10 relative text-center px-4"
@@ -122,7 +122,7 @@ export const HeroSection: React.FC = () => {
                 textShadow: '0 4px 20px rgba(0,0,0,0.85), 0 10px 40px rgba(182,0,168,0.25)',
               }}
             >
-              Hi, I&apos;m Shourya Kumar.
+              Hi, I&apos;m Shourya.
             </h1>
 
             <div

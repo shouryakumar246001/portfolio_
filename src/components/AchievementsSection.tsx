@@ -117,7 +117,7 @@ const AchievementCard3D: React.FC<{ item: AchievementItem; index: number }> = ({
           transformStyle: 'preserve-3d',
           willChange: 'transform',
         }}
-        className="relative rounded-[26px] sm:rounded-[30px] p-6 sm:p-8 md:p-9 flex flex-col justify-between overflow-hidden cursor-pointer select-none bg-[#101115]/95 border border-white/15 hover:border-[#B600A8]/50 shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:shadow-[0_25px_60px_rgba(182,0,168,0.35),0_0_30px_rgba(255,255,255,0.08)] transition-colors duration-300 group"
+        className="relative rounded-[26px] sm:rounded-[30px] p-6 sm:p-8 md:p-9 flex flex-col justify-between overflow-hidden cursor-pointer select-none bg-white/[0.03] backdrop-blur-2xl border border-white/15 hover:border-white/30 hover:bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.12)] hover:shadow-[0_18px_44px_rgba(0,0,0,0.55),inset_0_1px_1px_rgba(255,255,255,0.16)] transition-all duration-300 group"
       >
         {/* Soft directional spotlight following the cursor */}
         <div

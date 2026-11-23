@@ -7,7 +7,6 @@ export const BlackCursor: React.FC = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only enable on devices with a mouse/fine pointer
     if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) {
       return;
     }
@@ -16,13 +15,12 @@ export const BlackCursor: React.FC = () => {
       if (!isVisible) setIsVisible(true);
 
       if (cursorRef.current) {
-        cursorRef.current.style.transform = `translate3d(${e.clientX - 2.5}px, ${e.clientY - 2.5}px, 0)`;
+        cursorRef.current.style.transform = `translate3d(${e.clientX - 1}px, ${e.clientY - 1}px, 0)`;
       }
 
-      // Check if hovering over interactive element
       const target = e.target as HTMLElement | null;
       if (target) {
-        const interactive = target.closest('a, button, [role="button"], input, textarea, select, .cursor-pointer');
+        const interactive = target.closest('a, button, [role="button"], input, textarea, select, .cursor-pointer, [data-interactive]');
         setIsPointer(!!interactive);
       }
     };
@@ -60,29 +58,17 @@ export const BlackCursor: React.FC = () => {
       <div
         className="transition-transform duration-100 ease-out origin-top-left"
         style={{
-          transform: `${isPointer ? 'scale(1.18)' : 'scale(1)'} ${
-            isPressed ? 'scale(0.92)' : ''
+          transform: `${isPointer ? 'scale(1.16) rotate(-3deg)' : 'scale(1)'} ${
+            isPressed ? 'scale(0.92) translate3d(2px, 2px, 0)' : ''
           }`,
         }}
       >
-        <svg
-          width="40"
-          height="48"
-          viewBox="0 0 28 34"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-[0_4px_14px_rgba(0,0,0,0.7)]"
-        >
-          {/* Outer stroke shadow / outline layer for extra contrast */}
-          <path
-            d="M2.5 2.5 L2.5 26.5 L8.5 20.5 L14 31.5 L19 29 L13.5 18 L22 18 Z"
-            fill="#000000"
-            stroke="#FFFFFF"
-            strokeWidth="2.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <img
+          src="/robot-hand-cursor.png"
+          alt=""
+          draggable={false}
+          className="w-10 h-10 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.7)]"
+        />
       </div>
     </div>
   );

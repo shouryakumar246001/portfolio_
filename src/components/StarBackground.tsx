@@ -146,9 +146,6 @@ export const StarBackground: React.FC = () => {
       const elapsed = (now - startTime) / 1000;
       ctx.clearRect(0, 0, width, height);
 
-      // Subtle parallax offset based on scroll position
-      const scrollY = window.scrollY;
-
       for (let i = 0; i < stars.length; i++) {
         const star = stars[i];
 
@@ -156,11 +153,9 @@ export const StarBackground: React.FC = () => {
         const twinkle = 0.65 + 0.35 * Math.sin(elapsed * star.twinkleSpeed + star.twinklePhase);
         const currentAlpha = Math.min(1, Math.max(0, star.baseAlpha * twinkle));
 
-        // Coordinate calculation with subtle parallax wrapping
+        // Completely stationary coordinates across the sky (zero scroll drift or parallax)
         const px = (star.x / 100) * width;
-        const rawY = (star.y / 100) * height - (scrollY * star.depth * 0.2);
-        // Wrap vertically so space feels continuous
-        const py = ((rawY % height) + height) % height;
+        const py = (star.y / 100) * height;
 
         // Draw soft outer glow for brighter stars
         if (star.hasGlow && currentAlpha > 0.3) {

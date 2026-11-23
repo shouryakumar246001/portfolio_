@@ -1,115 +1,67 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 /**
- * GlobalCursor — a premium dual-layer cursor that works across the entire website.
- * - Inner dot: snaps instantly to the mouse position (no lag).
- * - Outer ring: follows with a smooth spring-like trail effect.
- * - On hover over interactive elements: ring expands, dot shrinks, ring colour shifts to magenta.
- * - On VHS book covers: ring turns blue with an "OPEN" label.
- * - On click/press: both layers scale down for a tactile press-down feel.
- * - Works only on devices with a fine pointer (desktop mouse); hides on touch devices.
+ * 3D White Robot Hand Cursor
+ * Features:
+ * - Pixel-accurate hotspot aligned with the pointing index finger tip.
+ * - Hardware-accelerated translate3d tracking with zero input lag.
+ * - Tactile hover scaling & tilt on interactive elements (buttons, links, inputs, cards).
+ * - Satisfying click compression on mousedown.
+ * - Integrated floating "OPEN" pill badge for VHS shelf items.
+ * - Touch-aware: gracefully hides on touch/mobile screens.
  */
 export const GlobalCursor: React.FC = () => {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLSpanElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLSpanElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const [isVHS, setIsVHS] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) return;
+    // Only enable on devices with a mouse/fine pointer
+    if (typeof window === 'undefined' || !window.matchMedia('(pointer: fine)').matches) {
+      return;
+    }
 
-    // Hide the native OS cursor globally
+    // Hide native cursor while custom cursor is mounted
     document.documentElement.style.cursor = 'none';
 
-    let mouseX = -200;
-    let mouseY = -200;
-    let ringX = -200;
-    let ringY = -200;
-    let isPointer = false;
-    let isVHSBook = false;
-    let isPressed = false;
-    let rafId: number;
+    let currentX = -100;
+    let currentY = -100;
 
     const onMouseMove = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
+      currentX = e.clientX;
+      currentY = e.clientY;
 
+      if (!isVisible) setIsVisible(true);
+
+      if (cursorRef.current) {
+        // Hotspot offset: The index finger tip is at top-left (approx 1px from edge at 38px display)
+        cursorRef.current.style.transform = `translate3d(${currentX - 1}px, ${currentY - 1}px, 0)`;
+      }
+
+      // Check if hovering over interactive elements
       const target = e.target as HTMLElement | null;
       if (target) {
-        // Check for VHS book covers first (special blue ring)
-        const vhsHit = target.closest('[data-cover], .vhs-cover-open-badge, .vhs-center-play-btn');
-        isVHSBook = !!vhsHit;
-        // Check for general interactive elements
-        const interactive = target.closest('a, button, [role="button"], input, textarea, select, .cursor-pointer, label');
-        isPointer = !!interactive;
-      }
+        const vhsItem = target.closest('[data-cover], .vhs-cover-open-badge, .vhs-center-play-btn');
+        setIsVHS(!!vhsItem);
 
-      // Snap dot instantly
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${mouseX - 4}px, ${mouseY - 4}px, 0)`;
-        dotRef.current.style.opacity = '1';
+        const interactive = target.closest(
+          'a, button, [role="button"], input, textarea, select, .cursor-pointer, label, [data-interactive]'
+        );
+        setIsHovered(!!interactive || !!vhsItem);
       }
     };
 
-    const onMouseDown = () => {
-      isPressed = true;
-    };
-    const onMouseUp = () => {
-      isPressed = false;
-    };
+    const onMouseDown = () => setIsPressed(true);
+    const onMouseUp = () => setIsPressed(false);
     const onMouseLeave = () => {
-      // Reset pointer state when cursor leaves the window
-      isPointer = false;
-      isVHSBook = false;
-      if (dotRef.current) dotRef.current.style.opacity = '0';
-      if (ringRef.current) ringRef.current.style.opacity = '0';
+      setIsVisible(false);
+      setIsHovered(false);
+      setIsVHS(false);
     };
-    const onMouseEnter = () => {
-      if (dotRef.current) dotRef.current.style.opacity = '1';
-      if (ringRef.current) ringRef.current.style.opacity = '1';
-    };
-
-    // Smooth ring lerp loop
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    const SPEED = 0.11;
-
-    const animate = () => {
-      ringX = lerp(ringX, mouseX, SPEED);
-      ringY = lerp(ringY, mouseY, SPEED);
-
-      if (ringRef.current) {
-        const size = isVHSBook ? 56 : isPointer ? 44 : 32;
-        const half = size / 2;
-        ringRef.current.style.transform = `translate3d(${ringX - half}px, ${ringY - half}px, 0)`;
-        ringRef.current.style.width = `${size}px`;
-        ringRef.current.style.height = `${size}px`;
-
-        if (isVHSBook) {
-          ringRef.current.style.borderColor = 'rgba(255,255,255,0.9)';
-          ringRef.current.style.background = 'rgba(31,63,176,0.75)';
-          ringRef.current.style.boxShadow = '0 0 20px rgba(31,63,176,0.8)';
-        } else if (isPointer) {
-          ringRef.current.style.borderColor = 'rgba(182,0,168,0.85)';
-          ringRef.current.style.background = 'transparent';
-          ringRef.current.style.boxShadow = '0 0 14px rgba(182,0,168,0.5)';
-        } else {
-          ringRef.current.style.borderColor = 'rgba(215,226,234,0.55)';
-          ringRef.current.style.background = 'transparent';
-          ringRef.current.style.boxShadow = '0 0 6px rgba(0,0,0,0.5)';
-        }
-      }
-
-      if (labelRef.current) {
-        labelRef.current.style.opacity = isVHSBook ? '1' : '0';
-      }
-
-      if (dotRef.current) {
-        const dotScale = isPressed ? 0.5 : (isPointer || isVHSBook) ? 0.3 : 1;
-        dotRef.current.style.scale = `${dotScale}`;
-        dotRef.current.style.background = isVHSBook ? '#ffffff' : isPointer ? '#B600A8' : '#ffffff';
-      }
-
-      rafId = requestAnimationFrame(animate);
-    };
+    const onMouseEnter = () => setIsVisible(true);
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('mousedown', onMouseDown);
@@ -117,10 +69,7 @@ export const GlobalCursor: React.FC = () => {
     document.addEventListener('mouseleave', onMouseLeave);
     document.addEventListener('mouseenter', onMouseEnter);
 
-    rafId = requestAnimationFrame(animate);
-
     return () => {
-      cancelAnimationFrame(rafId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
@@ -128,46 +77,51 @@ export const GlobalCursor: React.FC = () => {
       document.removeEventListener('mouseenter', onMouseEnter);
       document.documentElement.style.cursor = '';
     };
-  }, []);
+  }, [isVisible]);
 
   return (
-    <>
-      {/* Outer trailing ring */}
-      <div
-        ref={ringRef}
-        aria-hidden
-        className="fixed top-0 left-0 pointer-events-none z-[9999999] rounded-full border-[1.5px] transition-[border-color,box-shadow,background,width,height] duration-150 will-change-transform flex items-center justify-center"
-        style={{
-          width: '32px',
-          height: '32px',
-          borderColor: 'rgba(215,226,234,0.55)',
-          background: 'transparent',
-          transform: 'translate3d(-200px, -200px, 0)',
-          opacity: 0,
-        }}
-      >
+    <div
+      ref={cursorRef}
+      aria-hidden
+      className={`fixed top-0 left-0 pointer-events-none z-[9999999] will-change-transform transition-opacity duration-150 ${
+        isVisible ? 'opacity-100' : 'opacity-0'
+      }`}
+      style={{
+        transform: 'translate3d(-100px, -100px, 0)',
+      }}
+    >
+      <div className="relative select-none pointer-events-none">
+        {/* 3D White Robot Hand Image */}
+        <img
+          src="/robot-hand-cursor.png"
+          alt=""
+          draggable={false}
+          className="w-10 h-10 object-contain will-change-transform origin-top-left transition-transform duration-100 ease-out select-none"
+          style={{
+            transform: `${
+              isPressed
+                ? 'scale(0.92) translate3d(2px, 2px, 0)'
+                : isHovered
+                ? 'scale(1.16) rotate(-3deg)'
+                : 'scale(1)'
+            }`,
+            filter: isHovered
+              ? 'drop-shadow(0 0 10px rgba(182, 0, 168, 0.55)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75))'
+              : 'drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65))',
+          }}
+        />
+
+        {/* VHS Floating Badge indicator */}
         <span
-          ref={labelRef}
-          className="text-[8px] font-bold text-white uppercase tracking-widest select-none"
-          style={{ opacity: 0, transition: 'opacity 0.15s ease', letterSpacing: '0.06em', pointerEvents: 'none' }}
+          ref={badgeRef}
+          className={`absolute left-10 top-2 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-wider uppercase text-white bg-[#1F3FB0]/90 border border-white/30 backdrop-blur-md shadow-[0_4px_12px_rgba(31,63,176,0.6)] transition-all duration-150 ${
+            isVHS ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-1'
+          }`}
         >
           OPEN
         </span>
       </div>
-      {/* Inner sharp dot — snaps instantly */}
-      <div
-        ref={dotRef}
-        aria-hidden
-        className="fixed top-0 left-0 pointer-events-none z-[9999999] rounded-full will-change-transform transition-[background,scale] duration-100"
-        style={{
-          width: '8px',
-          height: '8px',
-          background: '#ffffff',
-          transform: 'translate3d(-200px, -200px, 0)',
-          opacity: 0,
-        }}
-      />
-    </>
+    </div>
   );
 };
 
