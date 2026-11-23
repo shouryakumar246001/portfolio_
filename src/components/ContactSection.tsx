@@ -141,6 +141,7 @@ export const ContactSection: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [needsActivation, setNeedsActivation] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [isResumeOpen, setIsResumeOpen] = useState(false);
 
@@ -188,8 +189,9 @@ export const ContactSection: React.FC = () => {
     };
 
     let delivered = false;
+    let activationRequired = false;
 
-    // 1. Primary: Try local /api/contact Node/Express backend
+    // 1. Primary: Try /api/contact (Vercel Serverless or Express Backend)
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
@@ -204,14 +206,16 @@ export const ContactSection: React.FC = () => {
         const result = await response.json();
         if (result.success) {
           delivered = true;
+          if (result.needsActivation) {
+            activationRequired = true;
+          }
         }
       }
     } catch {
-      // Local backend not reachable (e.g. running statically without server running)
       delivered = false;
     }
 
-    // 2. Direct Fallback: FormSubmit API to shourya24600101@gmail.com
+    // 2. Direct Fallback: FormSubmit API directly from browser
     if (!delivered) {
       try {
         const fallbackRes = await fetch('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
@@ -233,6 +237,9 @@ export const ContactSection: React.FC = () => {
           const fallbackData = await fallbackRes.json();
           if (fallbackData.success === 'true' || fallbackData.success === true) {
             delivered = true;
+          } else if (fallbackData.message && fallbackData.message.includes('Activation')) {
+            delivered = true;
+            activationRequired = true;
           }
         }
       } catch {
@@ -243,6 +250,7 @@ export const ContactSection: React.FC = () => {
     setIsSubmitting(false);
 
     if (delivered) {
+      setNeedsActivation(activationRequired);
       setIsSubmitted(true);
     } else {
       // Final fallback: launch mailto client so no user message is ever lost
@@ -429,28 +437,57 @@ ${payload.message}`)}`;
                   </div>
 
                   {isSubmitted ? (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
-                    >
-                      <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                      <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                        Message Sent Successfully!
-                      </h4>
-                      <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
-                        Your message has been dispatched directly to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span>. Thank you for reaching out!
-                      </p>
-                      <button
-                        onClick={() => {
-                          setIsSubmitted(false);
-                          setFormData({ name: '', email: '', subject: '', message: '' });
-                        }}
-                        className="mt-4 px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
+                    needsActivation ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-8 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-center space-y-4"
                       >
-                        Send another message
-                      </button>
-                    </motion.div>
+                        <Mail className="w-12 h-12 text-amber-400 mx-auto animate-pulse" />
+                        <h4 className="font-bold text-white uppercase text-base sm:text-lg">
+                          One-Time Activation Required!
+                        </h4>
+                        <p className="text-xs sm:text-sm text-[#D7E2EA]/90 font-light max-w-md mx-auto leading-relaxed">
+                          FormSubmit has dispatched an activation link to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-amber-500/60">shourya24600101@gmail.com</span>.
+                        </p>
+                        <p className="text-xs text-[#D7E2EA]/70 max-w-md mx-auto leading-relaxed">
+                          Please check your <strong className="text-white">Gmail inbox (and Spam / Updates folder)</strong> for an email from FormSubmit and click <strong className="text-amber-300">"Activate Form"</strong>. Once activated, all future messages will land directly in your inbox!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setIsSubmitted(false);
+                            setNeedsActivation(false);
+                            setFormData({ name: '', email: '', subject: '', message: '' });
+                          }}
+                          className="mt-4 px-6 py-2.5 rounded-full border border-amber-500/30 bg-amber-500/15 hover:bg-amber-500/25 text-xs uppercase font-mono tracking-wider text-amber-200 transition-colors cursor-pointer"
+                        >
+                          I have activated / Send another
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
+                      >
+                        <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
+                        <h4 className="font-bold text-white uppercase text-base sm:text-lg">
+                          Message Sent Successfully!
+                        </h4>
+                        <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
+                          Your message has been dispatched directly to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span>. Thank you for reaching out!
+                        </p>
+                        <button
+                          onClick={() => {
+                            setIsSubmitted(false);
+                            setFormData({ name: '', email: '', subject: '', message: '' });
+                          }}
+                          className="mt-4 px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
+                        >
+                          Send another message
+                        </button>
+                      </motion.div>
+                    )
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                       {statusError && (

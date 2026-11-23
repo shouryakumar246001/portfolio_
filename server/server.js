@@ -20,18 +20,16 @@ app.use(express.json());
 
 // Create nodemailer transporter
 function createTransporter() {
-  const user = process.env.SMTP_USER || 'shourya24600101@gmail.com';
+  const user = process.env.SMTP_USER || RECIPIENT_EMAIL;
   const pass = process.env.SMTP_PASS;
 
   if (pass) {
-    // Authenticated Gmail SMTP
     return nodemailer.createTransport({
       service: 'gmail',
       auth: { user, pass },
     });
   }
 
-  // Fallback SMTP
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '465'),
@@ -70,9 +68,6 @@ app.post('/api/contact', async (req, res) => {
     const cleanDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     console.log(`[Contact API] Received message from ${name} (${email}): "${cleanSubject}"`);
-
-    let dispatchSuccess = false;
-    let dispatchMethod = '';
 
     // Method 1: Nodemailer via Gmail SMTP (if SMTP_PASS provided)
     if (process.env.SMTP_PASS) {
@@ -143,59 +138,75 @@ app.post('/api/contact', async (req, res) => {
 
         await transporter.sendMail(mailOptions);
         console.log(`[Contact API] Successfully dispatched email via Gmail SMTP to ${RECIPIENT_EMAIL}`);
-        dispatchSuccess = true;
-        dispatchMethod = 'Gmail SMTP';
+        return res.status(200).json({
+          success: true,
+          method: 'Gmail SMTP',
+          message: `Message dispatched successfully to ${RECIPIENT_EMAIL}`,
+        });
       } catch (smtpErr) {
         console.warn('[Contact API] SMTP dispatch failed, attempting FormSubmit fallback:', smtpErr.message);
       }
     }
 
-    // Method 2: FormSubmit dispatch fallback if SMTP is unconfigured or failed
-    if (!dispatchSuccess) {
-      try {
-        const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            _subject: `[Portfolio] ${cleanSubject}`,
-            message,
-            _template: 'box',
-            _replyto: email,
-          }),
+    // Method 2: FormSubmit dispatch fallback
+    try {
+      const origin = req.headers.origin || 'https://portfolio-shourya.vercel.app';
+      const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': origin,
+          'Referer': `${origin}/`,
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          _subject: `[Portfolio] ${cleanSubject}`,
+          message: message.trim(),
+          _template: 'box',
+          _replyto: email.trim(),
+        }),
+      });
+
+      const data = await formSubmitRes.json();
+
+      if (data.success === 'true' || data.success === true) {
+        console.log(`[Contact API] Dispatched via FormSubmit to ${RECIPIENT_EMAIL}`);
+        return res.status(200).json({
+          success: true,
+          needsActivation: false,
+          method: 'FormSubmit Forwarder',
+          message: `Message dispatched successfully to ${RECIPIENT_EMAIL}!`,
         });
-
-        if (formSubmitRes.ok) {
-          console.log(`[Contact API] Successfully dispatched email via FormSubmit to ${RECIPIENT_EMAIL}`);
-          dispatchSuccess = true;
-          dispatchMethod = 'FormSubmit Forwarder';
-        } else {
-          const errText = await formSubmitRes.text();
-          console.warn(`[Contact API] FormSubmit returned status ${formSubmitRes.status}:`, errText);
-        }
-      } catch (formSubmitErr) {
-        console.error('[Contact API] FormSubmit request error:', formSubmitErr.message);
       }
+
+      if (data.message && data.message.includes('Activation')) {
+        console.log(`[Contact API] FormSubmit requested email activation for ${RECIPIENT_EMAIL}`);
+        return res.status(200).json({
+          success: true,
+          needsActivation: true,
+          method: 'FormSubmit Activation Required',
+          message: data.message,
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: data.message || 'FormSubmit dispatch failed',
+      });
+    } catch (formSubmitErr) {
+      console.error('[Contact API] FormSubmit error:', formSubmitErr.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to process message.',
+      });
     }
-
-    // If both dispatched or if running in offline dev mode, log full message
-    console.log(`[Contact API] Processed message for ${RECIPIENT_EMAIL} (Method: ${dispatchMethod || 'Logged'})`);
-
-    return res.status(200).json({
-      success: true,
-      message: `Message dispatched successfully to ${RECIPIENT_EMAIL}!`,
-      method: dispatchMethod,
-      data: { name, email, subject: cleanSubject, date: cleanDate },
-    });
   } catch (error) {
     console.error('[Contact API Error]:', error);
     return res.status(500).json({
       success: false,
-      error: 'Failed to process message. Please try direct email: ' + RECIPIENT_EMAIL,
+      error: 'Failed to process message.',
     });
   }
 });

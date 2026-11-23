@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
-  // Set CORS headers
+  // CORS configuration
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -35,10 +35,7 @@ export default async function handler(req, res) {
     const cleanSubject = subject && subject.trim() ? subject.trim() : `New Inquiry from ${name.trim()}`;
     const cleanDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
-    let sent = false;
-    let method = '';
-
-    // Option 1: Gmail SMTP via Nodemailer if SMTP_PASS is configured in Vercel Environment Variables
+    // Method 1: Gmail SMTP via Nodemailer (if SMTP_PASS is provided in Vercel environment variables)
     if (process.env.SMTP_PASS) {
       try {
         const transporter = nodemailer.createTransport({
@@ -95,7 +92,7 @@ export default async function handler(req, res) {
                   </div>
                 </div>
                 <div class="footer">
-                  Sent via Shourya Kumar's Portfolio on Vercel
+                  Sent via Shourya Kumar's Portfolio
                 </div>
               </div>
             </body>
@@ -111,48 +108,70 @@ export default async function handler(req, res) {
           html: htmlBody,
         });
 
-        sent = true;
-        method = 'Vercel Serverless (Gmail SMTP)';
-      } catch (smtpErr) {
-        console.warn('Vercel SMTP failed, attempting fallback forwarder:', smtpErr.message);
-      }
-    }
-
-    // Option 2: FormSubmit forwarding fallback (works with 0 environment variables configured)
-    if (!sent) {
-      try {
-        const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            _subject: `[Portfolio] ${cleanSubject}`,
-            message,
-            _template: 'box',
-            _replyto: email,
-          }),
+        return res.status(200).json({
+          success: true,
+          method: 'Gmail SMTP',
+          message: `Message dispatched successfully to ${RECIPIENT_EMAIL}`,
         });
-
-        if (formSubmitRes.ok) {
-          sent = true;
-          method = 'Vercel Serverless (FormSubmit Forwarder)';
-        }
-      } catch (fsErr) {
-        console.error('FormSubmit fallback error:', fsErr.message);
+      } catch (smtpErr) {
+        console.warn('Vercel SMTP failed, attempting forwarder:', smtpErr.message);
       }
     }
 
-    return res.status(200).json({
-      success: true,
-      message: `Message dispatched successfully to ${RECIPIENT_EMAIL}`,
-      method,
-    });
+    // Method 2: FormSubmit Forwarder with proper Origin/Referer headers
+    try {
+      const origin = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://portfolio-shourya.vercel.app');
+      const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': origin,
+          'Referer': `${origin}/`,
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          _subject: `[Portfolio] ${cleanSubject}`,
+          message: message.trim(),
+          _template: 'box',
+          _replyto: email.trim(),
+        }),
+      });
+
+      const data = await formSubmitRes.json();
+
+      if (data.success === 'true' || data.success === true) {
+        return res.status(200).json({
+          success: true,
+          needsActivation: false,
+          method: 'FormSubmit Forwarder',
+          message: `Message delivered directly to ${RECIPIENT_EMAIL}`,
+        });
+      }
+
+      if (data.message && data.message.includes('Activation')) {
+        return res.status(200).json({
+          success: true,
+          needsActivation: true,
+          method: 'FormSubmit Activation Required',
+          message: data.message,
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: data.message || 'FormSubmit delivery error',
+      });
+    } catch (fsErr) {
+      console.error('FormSubmit fallback error:', fsErr.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to dispatch message.',
+      });
+    }
   } catch (err) {
-    console.error('Vercel Contact API Handler Error:', err);
+    console.error('Contact API Handler Error:', err);
     return res.status(500).json({
       success: false,
       error: 'Failed to process message.',
