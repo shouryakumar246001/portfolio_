@@ -711,7 +711,6 @@ export const VHSShelfSection: React.FC = () => {
       id="films"
       className="relative overflow-hidden select-none"
       style={{
-        background: '#0C0C0C',
         paddingTop: '6rem',
         paddingBottom: '5rem',
         minHeight: '520px',

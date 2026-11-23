@@ -593,7 +593,7 @@ export const ParticleCloud: React.FC = () => {
             onLoad={() => setIsMoonLoaded(true)}
             className="absolute inset-0 h-full w-full border-0 rounded-full overflow-hidden pointer-events-none"
             allow="autoplay; fullscreen; xr-spatial-tracking"
-            style={{ background: 'transparent', border: 'none', outline: 'none', filter: 'contrast(1.08) brightness(0.94) saturate(0.82)' }}
+            style={{ background: 'transparent', border: 'none', outline: 'none', filter: 'contrast(1.08) brightness(0.94) saturate(0.82)', mixBlendMode: 'screen' }}
           />
         </div>
       </div>
