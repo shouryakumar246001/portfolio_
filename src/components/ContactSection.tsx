@@ -212,7 +212,7 @@ export const ContactSection: React.FC = () => {
       }
     };
 
-    // Attempt 1: Try local or deployment backend API (/api/contact) with a 3.5s timeout
+    // Attempt 1: Try the backend, which delivers through configured mail or FormSubmit.
     try {
       setSubmittingStatus('Checking server mail handler...');
       const apiRes = await fetchWithTimeout('/api/contact', {
@@ -227,15 +227,24 @@ export const ContactSection: React.FC = () => {
           subject: cleanSubject,
           message: cleanMessage,
         }),
-      }, 3500);
+      }, 12000);
 
+      const apiData = await apiRes.json();
       if (apiRes.ok) {
-        const apiData = await apiRes.json();
         if (apiData.success && !apiData.needsActivation) {
           setIsSubmitting(false);
           setSubmissionState('success');
           return;
         }
+      }
+
+      if (apiData.needsActivation || (typeof apiData.message === 'string' && /activation|confirm.*email|verify.*email/i.test(apiData.message))) {
+        setIsSubmitting(false);
+        setSubmissionState('needs_activation');
+        setStatusError(
+          "FormSubmit requires a one-time email activation. Check shourya24600101@gmail.com and click 'Activate Form' to enable automatic delivery. Your message is preserved below if you need to send it manually."
+        );
+        return;
       }
     } catch {
       // Backend not running, timed out, or not configured - seamlessly fall through to FormSubmit
@@ -265,17 +274,20 @@ export const ContactSection: React.FC = () => {
       const data = await response.json();
       setIsSubmitting(false);
 
-      if (data.success === 'true' || data.success === true) {
-        setSubmissionState('success');
-      } else if (data.message && data.message.includes('Activation')) {
+      if (typeof data.message === 'string' && /activation|confirm.*email|verify.*email/i.test(data.message)) {
         // FormSubmit requires one-time email activation from shourya24600101@gmail.com
         setSubmissionState('needs_activation');
         setStatusError(
           "FormSubmit sent an activation email to shourya24600101@gmail.com. Once you click 'Activate Form' in your inbox (or Spam folder), automatic delivery will be enabled. Until then, use the instant 1-click Gmail or Mail App button below!"
         );
+      } else if (data.success === 'true' || data.success === true) {
+        setSubmissionState('success');
       } else {
         setSubmissionState('error');
-        setStatusError(data.message || 'Form submission service could not deliver the message.');
+        setStatusError(
+          data.message ||
+          `Form submission failed${response.ok ? '' : ` (HTTP ${response.status})`}. You can still send the message using the Gmail or Mail App option below.`
+        );
       }
     } catch (err: unknown) {
       setIsSubmitting(false);

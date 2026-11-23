@@ -88,12 +88,62 @@ export default async function handler(req, res) {
       }
     }
 
-    // Fallback: Inform client to trigger direct Gmail intent
-    return res.status(200).json({
-      success: true,
-      openMailClient: true,
-      recipient: RECIPIENT_EMAIL,
-      data: { name, email, subject: cleanSubject, message },
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+    let formSubmitResponse;
+    try {
+      formSubmitResponse = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          _subject: `[Portfolio] ${cleanSubject}`,
+          message: message.trim(),
+          _captcha: 'false',
+          _template: 'box',
+          _replyto: email.trim(),
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    let formSubmitData;
+    try {
+      formSubmitData = await formSubmitResponse.json();
+    } catch {
+      return res.status(502).json({
+        success: false,
+        error: 'The email service returned an unreadable response. Please try again or use the email app option.',
+      });
+    }
+
+    if (typeof formSubmitData.message === 'string' && /activation|confirm.*email|verify.*email/i.test(formSubmitData.message)) {
+      return res.status(409).json({
+        success: false,
+        needsActivation: true,
+        method: 'FormSubmit Activation Required',
+        message: formSubmitData.message,
+      });
+    }
+
+    if (formSubmitResponse.ok && (formSubmitData.success === 'true' || formSubmitData.success === true)) {
+      return res.status(200).json({
+        success: true,
+        method: 'FormSubmit Forwarder',
+        message: `Message dispatched successfully to ${RECIPIENT_EMAIL}!`,
+      });
+    }
+
+    console.error('FormSubmit delivery failed:', formSubmitData.message || formSubmitResponse.status);
+    return res.status(502).json({
+      success: false,
+      error: formSubmitData.message || 'The email service could not deliver your message. Please use the email app option or try again later.',
     });
   } catch (err) {
     console.error('Contact API Error:', err);

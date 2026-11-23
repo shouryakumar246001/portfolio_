@@ -45,6 +45,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     recipient: RECIPIENT_EMAIL,
     smtpConfigured: Boolean(process.env.SMTP_PASS),
+    mailConfigured: Boolean(process.env.RESEND_API_KEY || process.env.SMTP_PASS),
   });
 });
 
@@ -150,23 +151,20 @@ app.post('/api/contact', async (req, res) => {
 
     // Method 2: FormSubmit dispatch fallback
     try {
-      const origin = req.headers.origin || 'https://portfolio-main-1-psi.vercel.app';
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
-
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Origin': origin,
-          'Referer': `${origin}/`,
         },
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
           _subject: `[Portfolio] ${cleanSubject}`,
           message: message.trim(),
+          _captcha: 'false',
           _template: 'box',
           _replyto: email.trim(),
         }),
@@ -176,7 +174,17 @@ app.post('/api/contact', async (req, res) => {
 
       const data = await formSubmitRes.json();
 
-      if (data.success === 'true' || data.success === true) {
+      if (typeof data.message === 'string' && /activation/i.test(data.message)) {
+        console.log(`[Contact API] FormSubmit requested email activation for ${RECIPIENT_EMAIL}`);
+        return res.status(409).json({
+          success: false,
+          needsActivation: true,
+          method: 'FormSubmit Activation Required',
+          message: data.message,
+        });
+      }
+
+      if (formSubmitRes.ok && (data.success === 'true' || data.success === true)) {
         console.log(`[Contact API] Dispatched via FormSubmit to ${RECIPIENT_EMAIL}`);
         return res.status(200).json({
           success: true,
@@ -186,17 +194,7 @@ app.post('/api/contact', async (req, res) => {
         });
       }
 
-      if (data.message && data.message.includes('Activation')) {
-        console.log(`[Contact API] FormSubmit requested email activation for ${RECIPIENT_EMAIL}`);
-        return res.status(200).json({
-          success: true,
-          needsActivation: true,
-          method: 'FormSubmit Activation Required',
-          message: data.message,
-        });
-      }
-
-      return res.status(500).json({
+      return res.status(502).json({
         success: false,
         error: data.message || 'FormSubmit dispatch failed',
       });
