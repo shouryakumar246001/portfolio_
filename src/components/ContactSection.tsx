@@ -183,7 +183,7 @@ export const ContactSection: React.FC = () => {
     return `mailto:${RECIPIENT}?subject=${encodeURIComponent(cleanSub)}&body=${encodeURIComponent(cleanBody)}`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setStatusError(null);
@@ -196,23 +196,23 @@ export const ContactSection: React.FC = () => {
       message: formData.message.trim(),
     };
 
-    // Try backend dispatch in background
-    try {
-      await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // Backend request silent fallback
+    // Construct URLs
+    const gmailUrl = getGmailUrl(payload);
+    const mailtoUrl = getMailtoUrl(payload);
+
+    // Synchronously open directly in the user click event (bypasses browser popup blockers completely!)
+    const win = window.open(gmailUrl, '_blank');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      // If popup blocker intervened, redirect window directly to mail client
+      window.location.href = mailtoUrl;
     }
 
-    // Automatically trigger direct Gmail tab for instant 100% delivery
-    const gmailUrl = getGmailUrl(payload);
-    const win = window.open(gmailUrl, '_blank');
-    if (!win) {
-      window.location.href = getMailtoUrl(payload);
-    }
+    // Also notify backend in background (non-blocking)
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
 
     setIsSubmitting(false);
     setIsSubmitted(true);
