@@ -196,23 +196,28 @@ export const ContactSection: React.FC = () => {
       message: formData.message.trim(),
     };
 
-    // Construct URLs
     const gmailUrl = getGmailUrl(payload);
-    const mailtoUrl = getMailtoUrl(payload);
 
-    // Synchronously open directly in the user click event (bypasses browser popup blockers completely!)
-    const win = window.open(gmailUrl, '_blank');
-    if (!win || win.closed || typeof win.closed === 'undefined') {
-      // If popup blocker intervened, redirect window directly to mail client
-      window.location.href = mailtoUrl;
-    }
-
-    // Also notify backend in background (non-blocking)
+    // Trigger backend notification in background
     fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     }).catch(() => {});
+
+    // Create a real link element and click it (trusted by browsers)
+    const link = document.createElement('a');
+    link.href = gmailUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Direct fail-safe navigation: if popup was blocked by browser, redirect current tab directly to Gmail!
+    setTimeout(() => {
+      window.location.href = gmailUrl;
+    }, 400);
 
     setIsSubmitting(false);
     setIsSubmitted(true);
