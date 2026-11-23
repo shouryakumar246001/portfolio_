@@ -199,7 +199,7 @@ export const ContactSection: React.FC = () => {
     const cleanSubject = formData.subject.trim() || `Portfolio Inquiry from ${cleanName}`;
     const cleanMessage = formData.message.trim();
 
-    const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 5000) => {
+    const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 30000) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       try {
@@ -212,7 +212,7 @@ export const ContactSection: React.FC = () => {
       }
     };
 
-    // Attempt 1: Try the backend, which delivers through configured mail or FormSubmit.
+    // Send through the backend once to avoid duplicate submissions on slow responses.
     try {
       setSubmittingStatus('Checking server mail handler...');
       const apiRes = await fetchWithTimeout('/api/contact', {
@@ -227,16 +227,9 @@ export const ContactSection: React.FC = () => {
           subject: cleanSubject,
           message: cleanMessage,
         }),
-      }, 12000);
+      });
 
-      const apiData = await apiRes.json();
-      if (apiRes.ok) {
-        if (apiData.success && !apiData.needsActivation) {
-          setIsSubmitting(false);
-          setSubmissionState('success');
-          return;
-        }
-      }
+      const apiData = await apiRes.json().catch(() => ({}));
 
       if (apiData.needsActivation || (typeof apiData.message === 'string' && /activation|confirm.*email|verify.*email/i.test(apiData.message))) {
         setIsSubmitting(false);
@@ -246,57 +239,28 @@ export const ContactSection: React.FC = () => {
         );
         return;
       }
-    } catch {
-      // Backend not running, timed out, or not configured - seamlessly fall through to FormSubmit
-    }
 
-    // Attempt 2: Direct FormSubmit with a 6-second timeout
-    try {
-      setSubmittingStatus('Dispatching via FormSubmit...');
-      const payload = {
-        name: cleanName,
-        email: cleanEmail,
-        _subject: cleanSubject,
-        message: cleanMessage,
-        _captcha: 'false',
-        _template: 'table',
-      };
-
-      const response = await fetchWithTimeout('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      }, 6000);
-
-      const data = await response.json();
-      setIsSubmitting(false);
-
-      if (typeof data.message === 'string' && /activation|confirm.*email|verify.*email/i.test(data.message)) {
-        // FormSubmit requires one-time email activation from shourya24600101@gmail.com
-        setSubmissionState('needs_activation');
-        setStatusError(
-          "FormSubmit sent an activation email to shourya24600101@gmail.com. Once you click 'Activate Form' in your inbox (or Spam folder), automatic delivery will be enabled. Until then, use the instant 1-click Gmail or Mail App button below!"
-        );
-      } else if (data.success === 'true' || data.success === true) {
+      if (apiRes.ok && apiData.success === true) {
+        setIsSubmitting(false);
         setSubmissionState('success');
-      } else {
-        setSubmissionState('error');
-        setStatusError(
-          data.message ||
-          `Form submission failed${response.ok ? '' : ` (HTTP ${response.status})`}. You can still send the message using the Gmail or Mail App option below.`
-        );
+        return;
       }
+
+      setIsSubmitting(false);
+      setSubmissionState('error');
+      setStatusError(
+        apiData.error ||
+        apiData.message ||
+        `The server could not confirm delivery${apiRes.ok ? '.' : ` (HTTP ${apiRes.status}).`} Check your inbox before retrying, in case the message was already delivered. Gmail and Mail App options are below.`
+      );
     } catch (err: unknown) {
       setIsSubmitting(false);
       setSubmissionState('error');
       const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'));
       setStatusError(
         isTimeout
-          ? 'Network request timed out. You can dispatch your message instantly in 1-click via Gmail or your mail app below without retyping!'
-          : 'Could not connect to the remote mail forwarder. You can dispatch your message instantly in 1-click via Gmail or your mail app below!'
+          ? 'The server did not confirm delivery in time. Your message may already have been delivered, so check your inbox before retrying. Gmail and Mail App options are below.'
+          : 'Could not connect to the mail server. Check your connection, then try again or use the Gmail or Mail App option below.'
       );
     }
   };

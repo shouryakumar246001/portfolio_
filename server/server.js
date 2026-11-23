@@ -184,7 +184,7 @@ app.post('/api/contact', async (req, res) => {
         });
       }
 
-      if (formSubmitRes.ok && (data.success === 'true' || data.success === true)) {
+      if (data.success === 'true' || data.success === true) {
         console.log(`[Contact API] Dispatched via FormSubmit to ${RECIPIENT_EMAIL}`);
         return res.status(200).json({
           success: true,

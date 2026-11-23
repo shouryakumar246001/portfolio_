@@ -132,7 +132,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (formSubmitResponse.ok && (formSubmitData.success === 'true' || formSubmitData.success === true)) {
+    if (formSubmitData.success === 'true' || formSubmitData.success === true) {
       return res.status(200).json({
         success: true,
         method: 'FormSubmit Forwarder',
