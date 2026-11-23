@@ -150,7 +150,7 @@ app.post('/api/contact', async (req, res) => {
 
     // Method 2: FormSubmit dispatch fallback
     try {
-      const origin = req.headers.origin || 'https://portfolio-shourya.vercel.app';
+      const origin = req.headers.origin || 'https://portfolio-main-1-psi.vercel.app';
       const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {

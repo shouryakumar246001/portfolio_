@@ -120,7 +120,7 @@ export default async function handler(req, res) {
 
     // Method 2: FormSubmit Forwarder with proper Origin/Referer headers
     try {
-      const origin = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://portfolio-shourya.vercel.app');
+      const origin = req.headers.origin || (req.headers.host ? `https://${req.headers.host}` : 'https://portfolio-main-1-psi.vercel.app');
       const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {
