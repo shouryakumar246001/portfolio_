@@ -295,7 +295,7 @@ const MonkeyBackground: React.FC = () => {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-4, 4, 4, -4, 0.1, 100);
