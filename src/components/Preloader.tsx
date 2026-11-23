@@ -12,7 +12,7 @@ export const Preloader: React.FC = () => {
     let current = 0;
     let holdTimeout: number | undefined;
 
-    // 100 steps at 50ms, followed by a 2-second hold, equals 7 seconds.
+    // 100 steps at 50ms, followed by a 1-second hold, equals 6 seconds.
     const interval = setInterval(() => {
       current = Math.min(100, current + 1);
       setProgress(current);
@@ -22,7 +22,7 @@ export const Preloader: React.FC = () => {
         holdTimeout = window.setTimeout(() => {
           setIsComplete(true);
           document.body.style.overflow = '';
-        }, 2000);
+        }, 1000);
       }
     }, 50);
 

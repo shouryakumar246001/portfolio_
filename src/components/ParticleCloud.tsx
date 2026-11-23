@@ -98,6 +98,16 @@ void main() {
     pos += flow * 0.00045 * uHZ * fluidDen;
   }
 
+  // Keep the torus opening clear, even when cursor forces push particles inward.
+  float innerHoleRadius = majorR - minorR * 0.88;
+  float radialDistance = length(pos.xy);
+  if (radialDistance < innerHoleRadius) {
+    vec2 radialDirection = radialDistance > 1e-4
+      ? pos.xy / radialDistance
+      : normalize(origin.xy);
+    pos.xy = radialDirection * innerHoleRadius;
+  }
+
   gl_FragColor = vec4(pos, 1.0);
 }
 `;
@@ -277,8 +287,8 @@ export const ParticleCloud: React.FC = () => {
       // Total outer donut diameter = 2 * (majorR + minorR) = 2 * (0.46 + 0.17) = 1.26
       const torusDiameter = (majorR + minorR) * 2;
       // Fit completely within viewport bounds with balanced margins so 100% of the donut is visible
-      const maxAllowedH = visibleH * 0.83;
-      const maxAllowedW = visibleW * 0.85;
+      const maxAllowedH = visibleH * 0.86;
+      const maxAllowedW = visibleW * 0.88;
       const fitDim = Math.min(maxAllowedH, maxAllowedW);
       const s = Math.max(0.88, Math.min(2.15, fitDim / torusDiameter));
 
