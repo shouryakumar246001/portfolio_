@@ -151,6 +151,9 @@ app.post('/api/contact', async (req, res) => {
     // Method 2: FormSubmit dispatch fallback
     try {
       const origin = req.headers.origin || 'https://portfolio-main-1-psi.vercel.app';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
       const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {
@@ -167,7 +170,9 @@ app.post('/api/contact', async (req, res) => {
           _template: 'box',
           _replyto: email.trim(),
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await formSubmitRes.json();
 

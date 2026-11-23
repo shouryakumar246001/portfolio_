@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
 import ResumeModal from './ResumeModal';
-import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, LucideIcon } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, ExternalLink, RotateCcw, LucideIcon } from 'lucide-react';
 import { playKeyboardSound } from '../utils/audio';
 
 interface ContactCardProps {
@@ -136,7 +136,8 @@ export const ContactSection: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionState, setSubmissionState] = useState<'idle' | 'submitting' | 'success' | 'needs_activation' | 'error'>('idle');
+  const [submittingStatus, setSubmittingStatus] = useState<string>('Preparing Message...');
   const [statusError, setStatusError] = useState<string | null>(null);
   const [isResumeOpen, setIsResumeOpen] = useState(false);
 
@@ -169,50 +170,122 @@ export const ContactSection: React.FC = () => {
     if (statusError) setStatusError(null);
   };
 
+  const getMailtoUrl = () => {
+    const s = encodeURIComponent(formData.subject.trim() || `Portfolio Inquiry from ${formData.name.trim() || 'Visitor'}`);
+    const b = encodeURIComponent(
+      `Hi Shourya,\n\n${formData.message.trim()}\n\n---\nSender: ${formData.name.trim() || 'Visitor'}\nEmail: ${formData.email.trim() || 'Not specified'}`
+    );
+    return `mailto:shourya24600101@gmail.com?subject=${s}&body=${b}`;
+  };
 
-
-
+  const getGmailWebUrl = () => {
+    const s = encodeURIComponent(formData.subject.trim() || `Portfolio Inquiry from ${formData.name.trim() || 'Visitor'}`);
+    const b = encodeURIComponent(
+      `Hi Shourya,\n\n${formData.message.trim()}\n\n---\nSender: ${formData.name.trim() || 'Visitor'}\nEmail: ${formData.email.trim() || 'Not specified'}`
+    );
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=shourya24600101@gmail.com&su=${s}&body=${b}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmissionState('submitting');
+    setSubmittingStatus('Connecting to mail service...');
     setStatusError(null);
     playKeyboardSound(7, true);
 
-    const payload = {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      _subject: formData.subject.trim() || `Portfolio Inquiry from ${formData.name.trim()}`,
-      message: formData.message.trim(),
-      _captcha: 'false',
-      _template: 'table',
+    const cleanName = formData.name.trim();
+    const cleanEmail = formData.email.trim();
+    const cleanSubject = formData.subject.trim() || `Portfolio Inquiry from ${cleanName}`;
+    const cleanMessage = formData.message.trim();
+
+    const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs = 5000) => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeoutId);
+        return res;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+      }
     };
 
+    // Attempt 1: Try local or deployment backend API (/api/contact) with a 3.5s timeout
     try {
-      const response = await fetch('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
+      setSubmittingStatus('Checking server mail handler...');
+      const apiRes = await fetchWithTimeout('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+          subject: cleanSubject,
+          message: cleanMessage,
+        }),
+      }, 3500);
+
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        if (apiData.success && !apiData.needsActivation) {
+          setIsSubmitting(false);
+          setSubmissionState('success');
+          return;
+        }
+      }
+    } catch {
+      // Backend not running, timed out, or not configured - seamlessly fall through to FormSubmit
+    }
+
+    // Attempt 2: Direct FormSubmit with a 6-second timeout
+    try {
+      setSubmittingStatus('Dispatching via FormSubmit...');
+      const payload = {
+        name: cleanName,
+        email: cleanEmail,
+        _subject: cleanSubject,
+        message: cleanMessage,
+        _captcha: 'false',
+        _template: 'table',
+      };
+
+      const response = await fetchWithTimeout('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
         body: JSON.stringify(payload),
-      });
+      }, 6000);
 
       const data = await response.json();
       setIsSubmitting(false);
 
       if (data.success === 'true' || data.success === true) {
-        setIsSubmitted(true);
+        setSubmissionState('success');
       } else if (data.message && data.message.includes('Activation')) {
-        setIsSubmitted(true);
-        setStatusError("FormSubmit sent an activation email to shourya24600101@gmail.com. Please click 'Activate Form' in your inbox (or Spam folder)!");
+        // FormSubmit requires one-time email activation from shourya24600101@gmail.com
+        setSubmissionState('needs_activation');
+        setStatusError(
+          "FormSubmit sent an activation email to shourya24600101@gmail.com. Once you click 'Activate Form' in your inbox (or Spam folder), automatic delivery will be enabled. Until then, use the instant 1-click Gmail or Mail App button below!"
+        );
       } else {
-        setIsSubmitted(true);
+        setSubmissionState('error');
+        setStatusError(data.message || 'Form submission service could not deliver the message.');
       }
-    } catch {
+    } catch (err: unknown) {
       setIsSubmitting(false);
-      // Fallback
-      setIsSubmitted(true);
+      setSubmissionState('error');
+      const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'));
+      setStatusError(
+        isTimeout
+          ? 'Network request timed out. You can dispatch your message instantly in 1-click via Gmail or your mail app below without retyping!'
+          : 'Could not connect to the remote mail forwarder. You can dispatch your message instantly in 1-click via Gmail or your mail app below!'
+      );
     }
   };
 
@@ -375,7 +448,7 @@ export const ContactSection: React.FC = () => {
                     </p>
                   </div>
 
-                  {isSubmitted ? (
+                  {submissionState === 'success' ? (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -386,23 +459,126 @@ export const ContactSection: React.FC = () => {
                         Message Sent Successfully!
                       </h4>
                       <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
-                        Your message has been dispatched directly to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span> via FormSubmit. Thank you for reaching out!
+                        Your message has been dispatched directly to{' '}
+                        <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">
+                          shourya24600101@gmail.com
+                        </span>
+                        . Thank you for reaching out!
                       </p>
-                      {statusError && (
-                        <p className="text-xs text-amber-300 font-mono bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20 max-w-md mx-auto">
-                          {statusError}
-                        </p>
-                      )}
                       <div className="pt-2">
                         <button
                           onClick={() => {
-                            setIsSubmitted(false);
+                            setSubmissionState('idle');
                             setStatusError(null);
                             setFormData({ name: '', email: '', subject: '', message: '' });
                           }}
                           className="px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
                         >
                           Send another message
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : submissionState === 'needs_activation' ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-7 sm:p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-4"
+                    >
+                      <AlertCircle className="w-12 h-12 text-amber-400 mx-auto" />
+                      <h4 className="font-bold text-white uppercase text-base sm:text-lg">
+                        One-Time Mailbox Activation Needed
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-lg mx-auto leading-relaxed">
+                        FormSubmit requires a one-time activation. A confirmation email was sent to{' '}
+                        <span className="text-white font-mono font-medium underline underline-offset-4 decoration-amber-500/60">
+                          shourya24600101@gmail.com
+                        </span>
+                        . Please click <span className="text-amber-300 font-semibold">'Activate Form'</span> in your inbox or spam folder to enable automatic submissions!
+                      </p>
+                      <div className="p-4 rounded-xl bg-black/40 border border-white/10 max-w-lg mx-auto space-y-2 text-left">
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">
+                          Send this message right now with 1-click:
+                        </div>
+                        <p className="text-xs text-[#D7E2EA]/70">
+                          Your typed message is preserved! Click below to send directly to Shourya's email with zero delay:
+                        </p>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <a
+                            href={getGmailWebUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold transition-all no-underline"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Open in Gmail (Instant)</span>
+                          </a>
+                          <a
+                            href={getMailtoUrl()}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-mono transition-all no-underline"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Default Mail App</span>
+                          </a>
+                        </div>
+                      </div>
+                      <div className="pt-2 flex justify-center gap-3">
+                        <button
+                          onClick={() => setSubmissionState('idle')}
+                          className="px-5 py-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white transition-colors cursor-pointer"
+                        >
+                          Back to Edit Form
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : submissionState === 'error' ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-7 sm:p-8 rounded-2xl bg-red-500/10 border border-red-500/30 text-center space-y-4"
+                    >
+                      <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
+                      <h4 className="font-bold text-white uppercase text-base sm:text-lg">
+                        Service Delay / Network Issue
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-lg mx-auto leading-relaxed">
+                        {statusError || 'The web dispatch service took too long or was unreachable.'}
+                      </p>
+                      <div className="p-4 rounded-xl bg-black/40 border border-white/10 max-w-lg mx-auto space-y-2 text-left">
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">
+                          Send instantly via Gmail or Mail App:
+                        </div>
+                        <p className="text-xs text-[#D7E2EA]/70">
+                          Don't worry, your typed message is saved! Click below to send directly:
+                        </p>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <a
+                            href={getGmailWebUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold transition-all no-underline"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Send via Gmail Web</span>
+                          </a>
+                          <a
+                            href={getMailtoUrl()}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-mono transition-all no-underline"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Send via Mail App</span>
+                          </a>
+                        </div>
+                      </div>
+                      <div className="pt-2 flex justify-center gap-3">
+                        <button
+                          onClick={() => {
+                            setSubmissionState('idle');
+                            setStatusError(null);
+                          }}
+                          className="flex items-center gap-1.5 px-5 py-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white transition-colors cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Return to Form</span>
                         </button>
                       </div>
                     </motion.div>
@@ -494,7 +670,7 @@ export const ContactSection: React.FC = () => {
                         {isSubmitting ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Preparing Message...</span>
+                            <span>{submittingStatus}</span>
                           </>
                         ) : (
                           <>
@@ -503,6 +679,29 @@ export const ContactSection: React.FC = () => {
                           </>
                         )}
                       </motion.button>
+
+                      <div className="pt-2 flex items-center justify-between text-xs font-mono text-[#D7E2EA]/60 flex-wrap gap-2">
+                        <span>Prefer direct email?</span>
+                        <div className="flex items-center gap-3">
+                          <a
+                            href={getGmailWebUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#E879F9] hover:underline flex items-center gap-1 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Gmail</span>
+                          </a>
+                          <span>•</span>
+                          <a
+                            href={getMailtoUrl()}
+                            className="text-emerald-400 hover:underline flex items-center gap-1 transition-colors"
+                          >
+                            <Mail className="w-3 h-3" />
+                            <span>Mail App</span>
+                          </a>
+                        </div>
+                      </div>
                     </form>
                   )}
                 </motion.div>
