@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
 import ResumeModal from './ResumeModal';
-import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, LucideIcon } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, ExternalLink, LucideIcon } from 'lucide-react';
 import { playKeyboardSound } from '../utils/audio';
 
 interface ContactCardProps {
@@ -84,7 +84,6 @@ const ContactInfoCard3D: React.FC<ContactCardProps> = ({
         }}
         className="relative flex items-center gap-4.5 p-5 sm:p-5.5 rounded-2xl border border-white/15 hover:border-white/35 bg-[#101115]/95 shadow-[0_15px_40px_rgba(0,0,0,0.65)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)] overflow-hidden transition-colors duration-300 group select-none cursor-pointer"
       >
-        {/* Soft directional spotlight following cursor */}
         <div
           className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
           style={{
@@ -93,10 +92,8 @@ const ContactInfoCard3D: React.FC<ContactCardProps> = ({
           }}
         />
 
-        {/* Ambient Top Edge Highlight */}
         <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-white/40 transition-colors" />
 
-        {/* 3D Elevated Icon Container */}
         <div
           style={{ transform: 'translateZ(26px)', transformStyle: 'preserve-3d' }}
           className={`w-12 h-12 rounded-xl ${iconBgColor} border border-white/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.2)]`}
@@ -104,7 +101,6 @@ const ContactInfoCard3D: React.FC<ContactCardProps> = ({
           <Icon className={`w-5 h-5 ${accentColor}`} />
         </div>
 
-        {/* 3D Text Details */}
         <div
           style={{ transform: 'translateZ(24px)', transformStyle: 'preserve-3d' }}
           className="overflow-hidden"
@@ -141,7 +137,6 @@ export const ContactSection: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [needsActivation, setNeedsActivation] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [isResumeOpen, setIsResumeOpen] = useState(false);
 
@@ -157,7 +152,6 @@ export const ContactSection: React.FC = () => {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Ultra-subtle tilt on the large form container
     setFormRotation({
       x: -((y - centerY) / centerY) * 3,
       y: ((x - centerX) / centerX) * 3,
@@ -175,6 +169,20 @@ export const ContactSection: React.FC = () => {
     if (statusError) setStatusError(null);
   };
 
+  const RECIPIENT = 'shourya24600101@gmail.com';
+
+  const getGmailUrl = (data = formData) => {
+    const cleanSub = data.subject.trim() || `Inquiry from ${data.name.trim() || 'Visitor'}`;
+    const cleanBody = `Hi Shourya,\n\nName: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${RECIPIENT}&su=${encodeURIComponent(cleanSub)}&body=${encodeURIComponent(cleanBody)}`;
+  };
+
+  const getMailtoUrl = (data = formData) => {
+    const cleanSub = data.subject.trim() || `Inquiry from ${data.name.trim() || 'Visitor'}`;
+    const cleanBody = `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`;
+    return `mailto:${RECIPIENT}?subject=${encodeURIComponent(cleanSub)}&body=${encodeURIComponent(cleanBody)}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -188,83 +196,26 @@ export const ContactSection: React.FC = () => {
       message: formData.message.trim(),
     };
 
-    let delivered = false;
-    let activationRequired = false;
-
-    // 1. Primary: Try /api/contact (Vercel Serverless or Express Backend)
+    // Try backend dispatch in background
     try {
-      const response = await fetch('/api/contact', {
+      await fetch('/api/contact', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          delivered = true;
-          if (result.needsActivation) {
-            activationRequired = true;
-          }
-        }
-      }
     } catch {
-      delivered = false;
+      // Backend request silent fallback
     }
 
-    // 2. Direct Fallback: FormSubmit API directly from browser
-    if (!delivered) {
-      try {
-        const fallbackRes = await fetch('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            name: payload.name,
-            email: payload.email,
-            _subject: `[Portfolio] ${payload.subject}`,
-            message: payload.message,
-            _template: 'box',
-          }),
-        });
-
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json();
-          if (fallbackData.success === 'true' || fallbackData.success === true) {
-            delivered = true;
-          } else if (fallbackData.message && fallbackData.message.includes('Activation')) {
-            delivered = true;
-            activationRequired = true;
-          }
-        }
-      } catch {
-        delivered = false;
-      }
+    // Automatically trigger direct Gmail tab for instant 100% delivery
+    const gmailUrl = getGmailUrl(payload);
+    const win = window.open(gmailUrl, '_blank');
+    if (!win) {
+      window.location.href = getMailtoUrl(payload);
     }
 
     setIsSubmitting(false);
-
-    if (delivered) {
-      setNeedsActivation(activationRequired);
-      setIsSubmitted(true);
-    } else {
-      // Final fallback: launch mailto client so no user message is ever lost
-      const mailto = `mailto:shourya24600101@gmail.com?subject=${encodeURIComponent(
-        payload.subject
-      )}&body=${encodeURIComponent(`Name: ${payload.name}
-Email: ${payload.email}
-
-Message:
-${payload.message}`)}`;
-
-      window.location.href = mailto;
-      setIsSubmitted(true);
-    }
+    setIsSubmitted(true);
   };
 
   return (
@@ -274,7 +225,6 @@ ${payload.message}`)}`;
         className="bg-[#0C0C0C] pt-24 sm:pt-32 pb-16 px-5 sm:px-8 md:px-10 border-t border-[#D7E2EA]/15 select-none relative"
       >
         <div className="max-w-6xl mx-auto">
-          {/* Section Header */}
           <Heading3D
             title="Let's Build Something Together"
             subtitle="I'm always interested in discussing software development, innovative projects, open-source contributions, and exciting opportunities."
@@ -292,7 +242,6 @@ ${payload.message}`)}`;
                 </h3>
               </div>
 
-              {/* Email Card (Magenta Accent) */}
               <ContactInfoCard3D
                 icon={Mail}
                 label="Email"
@@ -304,7 +253,6 @@ ${payload.message}`)}`;
                 index={0}
               />
 
-              {/* Phone Card (Emerald Accent) */}
               <ContactInfoCard3D
                 icon={Phone}
                 label="Phone"
@@ -316,7 +264,6 @@ ${payload.message}`)}`;
                 index={1}
               />
 
-              {/* Location Card (Cyan Accent) */}
               <ContactInfoCard3D
                 icon={MapPin}
                 label="Location"
@@ -327,9 +274,8 @@ ${payload.message}`)}`;
                 index={2}
               />
 
-              {/* Quick links & Resume button (3D Pill Buttons) */}
+              {/* Quick links & Resume button */}
               <div className="pt-3 flex flex-wrap gap-3">
-                {/* LinkedIn */}
                 <motion.a
                   href="https://linkedin.com/in/shourya-kumar-9143372b9"
                   target="_blank"
@@ -343,7 +289,6 @@ ${payload.message}`)}`;
                   <span>LinkedIn Profile</span>
                 </motion.a>
 
-                {/* GitHub */}
                 <motion.a
                   href="https://github.com/shouryakumar246001"
                   target="_blank"
@@ -357,7 +302,6 @@ ${payload.message}`)}`;
                   <span>GitHub Profile</span>
                 </motion.a>
 
-                {/* Codolio */}
                 <motion.a
                   href="https://codolio.com/profile/sugaa.shourya"
                   target="_blank"
@@ -371,7 +315,6 @@ ${payload.message}`)}`;
                   <span>Codolio Profile</span>
                 </motion.a>
 
-                {/* Download Resume */}
                 <motion.button
                   onClick={() => {
                     playKeyboardSound(6, true);
@@ -415,7 +358,6 @@ ${payload.message}`)}`;
                   }}
                   className="relative rounded-[28px] sm:rounded-[36px] border border-white/20 bg-[#101115]/95 backdrop-blur-2xl p-6 sm:p-8 md:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(182,0,168,0.15)] overflow-hidden"
                 >
-                  {/* Subtle Directional Spotlight */}
                   <div
                     className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
                     style={{
@@ -424,7 +366,6 @@ ${payload.message}`)}`;
                     }}
                   />
 
-                  {/* Top Edge Highlight */}
                   <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
                   <div style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}>
@@ -432,62 +373,61 @@ ${payload.message}`)}`;
                       Send a Message
                     </h3>
                     <p className="text-xs sm:text-sm text-[#D7E2EA]/70 font-light mb-7">
-                      Fill in the details below and I will get back to you promptly.
+                      Fill in the details below and send directly to my email.
                     </p>
                   </div>
 
                   {isSubmitted ? (
-                    needsActivation ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="p-8 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-center space-y-4"
-                      >
-                        <Mail className="w-12 h-12 text-amber-400 mx-auto animate-pulse" />
-                        <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                          One-Time Activation Required!
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#D7E2EA]/90 font-light max-w-md mx-auto leading-relaxed">
-                          FormSubmit has dispatched an activation link to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-amber-500/60">shourya24600101@gmail.com</span>.
-                        </p>
-                        <p className="text-xs text-[#D7E2EA]/70 max-w-md mx-auto leading-relaxed">
-                          Please check your <strong className="text-white">Gmail inbox (and Spam / Updates folder)</strong> for an email from FormSubmit and click <strong className="text-amber-300">"Activate Form"</strong>. Once activated, all future messages will land directly in your inbox!
-                        </p>
-                        <button
-                          onClick={() => {
-                            setIsSubmitted(false);
-                            setNeedsActivation(false);
-                            setFormData({ name: '', email: '', subject: '', message: '' });
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
+                    >
+                      <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
+                      <h4 className="font-bold text-white uppercase text-base sm:text-lg">
+                        Message Ready to Deliver!
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#D7E2EA]/90 font-light max-w-md mx-auto leading-relaxed">
+                        Your message has been pre-filled for <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span>. Click below to complete in 1 second:
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        <a
+                          href={getGmailUrl()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-white font-medium text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-[0_4px_16px_rgba(182,0,168,0.4)] hover:scale-105 active:scale-95 no-underline"
+                          style={{
+                            background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
+                            outline: '2px solid rgba(255,255,255,0.85)',
+                            outlineOffset: '-3px',
                           }}
-                          className="mt-4 px-6 py-2.5 rounded-full border border-amber-500/30 bg-amber-500/15 hover:bg-amber-500/25 text-xs uppercase font-mono tracking-wider text-amber-200 transition-colors cursor-pointer"
                         >
-                          I have activated / Send another
-                        </button>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
-                      >
-                        <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
-                        <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                          Message Sent Successfully!
-                        </h4>
-                        <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
-                          Your message has been dispatched directly to <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">shourya24600101@gmail.com</span>. Thank you for reaching out!
-                        </p>
+                          <Mail className="w-4 h-4" />
+                          <span>Open in Gmail (1-Click)</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+
+                        <a
+                          href={getMailtoUrl()}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-medium text-xs uppercase tracking-wider transition-colors no-underline cursor-pointer"
+                        >
+                          <span>Open in Mail App</span>
+                        </a>
+                      </div>
+
+                      <div className="pt-2">
                         <button
                           onClick={() => {
                             setIsSubmitted(false);
                             setFormData({ name: '', email: '', subject: '', message: '' });
                           }}
-                          className="mt-4 px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
+                          className="text-xs uppercase font-mono tracking-wider text-[#D7E2EA]/50 hover:text-white transition-colors cursor-pointer underline underline-offset-4"
                         >
                           Send another message
                         </button>
-                      </motion.div>
-                    )
+                      </div>
+                    </motion.div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                       {statusError && (
@@ -576,7 +516,7 @@ ${payload.message}`)}`;
                         {isSubmitting ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Sending message...</span>
+                            <span>Preparing Message...</span>
                           </>
                         ) : (
                           <>
@@ -592,7 +532,6 @@ ${payload.message}`)}`;
             </FadeIn>
           </div>
 
-          {/* Footer bar */}
           <div className="mt-20 pt-8 border-t border-[#D7E2EA]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#D7E2EA]/50 text-center sm:text-left">
             <div>© {new Date().getFullYear()} Shourya Kumar. All rights reserved.</div>
             <div>Designed with React • TypeScript • Tailwind CSS • Framer Motion</div>
