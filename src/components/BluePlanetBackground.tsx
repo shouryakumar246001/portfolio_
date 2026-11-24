@@ -42,14 +42,16 @@ export const BluePlanetBackground: React.FC = () => {
       }
 
       if (planetRef.current) {
-        // Preserves exact diagonal trajectory from marked start to bottom-right
+        // Trajectory: starts on upper-left (X ≈ 23vw, Y ≈ 23vh) beneath the 3D Book / VHS shelf
+        // and glides down-right across Projects, Experience, and Contact sections
         const currentX = 23 + progress * 40;
         const currentY = 23 + progress * 46;
-        const rotation = -8 - progress * 10;
+        const rotation = -6 - progress * 12;
         const scale = 0.88 + progress * 0.16;
-        // 53% 43.3% is the exact center of the blue planet sphere in the 861x435 asset
+
+        // 58.9% 48.0% is the exact center of the blue planet sphere in the 520x415 asset
         planetRef.current.style.transform =
-          `translate3d(calc(${currentX}vw - 53%), calc(${currentY}vh - 43.3%), 0) scale(${scale}) rotate(${rotation}deg)`;
+          `translate3d(calc(${currentX}vw - 58.9%), calc(${currentY}vh - 48.0%), 0) scale(${scale}) rotate(${rotation}deg)`;
       }
 
       frame = requestAnimationFrame(animate);
@@ -77,13 +79,13 @@ export const BluePlanetBackground: React.FC = () => {
     >
       <div
         ref={planetRef}
-        className="absolute left-0 top-0 w-[540px] sm:w-[680px] md:w-[820px] lg:w-[980px] max-w-none will-change-transform"
-        style={{ transformOrigin: '53% 43.3%' }}
+        className="absolute left-0 top-0 w-[340px] sm:w-[420px] md:w-[500px] lg:w-[580px] xl:w-[640px] max-w-none will-change-transform"
+        style={{ transformOrigin: '58.9% 48.0%' }}
       >
-        {/* High-detail electric blue planet texture with companion moon from provided reference */}
+        {/* Show the planet and its small moon without an added blue glow */}
         <img
-          src="/blue-planet.png?v=1"
-          alt="Detailed blue planet with companion moon"
+          src="/planet-with-moon.png?v=1"
+          alt="Blue planet with a small moon"
           className="w-full h-auto select-none pointer-events-none relative z-10"
           loading="eager"
           decoding="async"

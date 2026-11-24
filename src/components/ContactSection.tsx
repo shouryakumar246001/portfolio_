@@ -1,131 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import FadeIn from './FadeIn';
 import Heading3D from './Heading3D';
-import ResumeModal from './ResumeModal';
-import { Mail, Phone, MapPin, Linkedin, Github, Download, CheckCircle, AlertCircle, Send, ExternalLink, RotateCcw, LucideIcon } from 'lucide-react';
-import { playKeyboardSound } from '../utils/audio';
-
-interface ContactCardProps {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  href?: string;
-  accentColor: string;
-  glowColor: string;
-  iconBgColor: string;
-  index: number;
-}
-
-const ContactInfoCard3D: React.FC<ContactCardProps> = ({
-  icon: Icon,
-  label,
-  value,
-  href,
-  accentColor,
-  glowColor,
-  iconBgColor,
-  index,
-}) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [spotlight, setSpotlight] = useState({ x: 0, y: 0, opacity: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    setRotation({
-      x: -((y - centerY) / centerY) * 6,
-      y: ((x - centerX) / centerX) * 6,
-    });
-    setSpotlight({ x, y, opacity: 1 });
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    playKeyboardSound(index, false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setRotation({ x: 0, y: 0 });
-    setSpotlight((prev) => ({ ...prev, opacity: 0 }));
-  };
-
-  const content = (
-    <div style={{ perspective: 1000 }}>
-      <motion.div
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={() => playKeyboardSound(index, true)}
-        animate={{
-          rotateX: rotation.x,
-          rotateY: rotation.y,
-          y: isHovered ? -5 : 0,
-          scale: isHovered ? 1.015 : 1,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 350,
-          damping: 22,
-          mass: 0.6,
-        }}
-        style={{
-          transformStyle: 'preserve-3d',
-          willChange: 'transform',
-        }}
-        className="relative flex items-center gap-4.5 p-5 sm:p-5.5 rounded-2xl border border-white/15 hover:border-white/35 bg-[#101115]/95 shadow-[0_15px_40px_rgba(0,0,0,0.65)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)] overflow-hidden transition-colors duration-300 group select-none cursor-pointer"
-      >
-        <div
-          className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
-          style={{
-            opacity: spotlight.opacity,
-            background: `radial-gradient(350px circle at ${spotlight.x}px ${spotlight.y}px, ${glowColor}, transparent 75%)`,
-          }}
-        />
-
-        <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:via-white/40 transition-colors" />
-
-        <div
-          style={{ transform: 'translateZ(26px)', transformStyle: 'preserve-3d' }}
-          className={`w-12 h-12 rounded-xl ${iconBgColor} border border-white/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.2)]`}
-        >
-          <Icon className={`w-5 h-5 ${accentColor}`} />
-        </div>
-
-        <div
-          style={{ transform: 'translateZ(24px)', transformStyle: 'preserve-3d' }}
-          className="overflow-hidden"
-        >
-          <div className="text-[11px] font-mono text-[#D7E2EA]/60 uppercase tracking-wider mb-0.5">
-            {label}
-          </div>
-          <div className="text-sm sm:text-base font-bold text-white group-hover:text-white transition-colors truncate">
-            {value}
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-
-  if (href) {
-    return (
-      <a href={href} className="block no-underline">
-        {content}
-      </a>
-    );
-  }
-
-  return content;
-};
+import VintageTelephone3D from './VintageTelephone3D';
+import {
+  Mail,
+  CheckCircle,
+  AlertCircle,
+  Send,
+  ExternalLink,
+  RotateCcw,
+} from 'lucide-react';
+import { playKeyboardSound, playVintageBellRing } from '../utils/audio';
 
 export const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -139,11 +25,44 @@ export const ContactSection: React.FC = () => {
   const [submissionState, setSubmissionState] = useState<'idle' | 'submitting' | 'success' | 'needs_activation' | 'error'>('idle');
   const [submittingStatus, setSubmittingStatus] = useState<string>('Preparing Message...');
   const [statusError, setStatusError] = useState<string | null>(null);
-  const [isResumeOpen, setIsResumeOpen] = useState(false);
 
+  // 3D Telephone Ringing State
+  const [isRinging, setIsRinging] = useState(false);
+  const [hasInteractedWithPhone, setHasInteractedWithPhone] = useState(false);
+  const telephoneRef = useRef<HTMLDivElement>(null);
+
+  // Form 3D Tilt
   const formCardRef = useRef<HTMLDivElement>(null);
   const [formRotation, setFormRotation] = useState({ x: 0, y: 0 });
-  const [formSpotlight, setFormSpotlight] = useState({ x: 0, y: 0, opacity: 0 });
+
+  // Trigger brief telephone ring animation when section is in view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasInteractedWithPhone) {
+            triggerTelephoneRing();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (telephoneRef.current) {
+      observer.observe(telephoneRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasInteractedWithPhone]);
+
+  const triggerTelephoneRing = () => {
+    setIsRinging(true);
+    setHasInteractedWithPhone(true);
+    playVintageBellRing();
+    setTimeout(() => {
+      setIsRinging(false);
+    }, 2200);
+  };
 
   const handleFormMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!formCardRef.current) return;
@@ -157,12 +76,10 @@ export const ContactSection: React.FC = () => {
       x: -((y - centerY) / centerY) * 3,
       y: ((x - centerX) / centerX) * 3,
     });
-    setFormSpotlight({ x, y, opacity: 1 });
   };
 
   const handleFormMouseLeave = () => {
     setFormRotation({ x: 0, y: 0 });
-    setFormSpotlight((prev) => ({ ...prev, opacity: 0 }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -190,7 +107,7 @@ export const ContactSection: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmissionState('submitting');
-    setSubmittingStatus('Connecting to mail service...');
+    setSubmittingStatus('Connecting to vintage dispatch line...');
     setStatusError(null);
     playKeyboardSound(7, true);
 
@@ -214,7 +131,7 @@ export const ContactSection: React.FC = () => {
 
     // Attempt 1: Try backend API (/api/contact) with a 3.5s timeout
     try {
-      setSubmittingStatus('Checking server mail handler...');
+      setSubmittingStatus('Checking server dispatch handler...');
       const apiRes = await fetchWithTimeout('/api/contact', {
         method: 'POST',
         headers: {
@@ -235,7 +152,7 @@ export const ContactSection: React.FC = () => {
         setIsSubmitting(false);
         setSubmissionState('needs_activation');
         setStatusError(
-          "FormSubmit requires a one-time email activation. Check shourya24600101@gmail.com and click 'Activate Form' to enable automatic delivery. Your message is preserved below if you need to send it manually."
+          "FormSubmit requires a one-time email activation. Check shourya24600101@gmail.com and click 'Activate Form' to enable automatic delivery."
         );
         return;
       }
@@ -246,12 +163,12 @@ export const ContactSection: React.FC = () => {
         return;
       }
     } catch {
-      // Backend offline, timed out, or not running - fall through to direct FormSubmit
+      // Backend offline or timed out - seamlessly fall through to direct FormSubmit
     }
 
     // Attempt 2: Direct browser dispatch via FormSubmit (6s timeout)
     try {
-      setSubmittingStatus('Dispatching via FormSubmit...');
+      setSubmittingStatus('Transmitting dispatch via FormSubmit...');
       const formSubmitRes = await fetchWithTimeout('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
         method: 'POST',
         headers: {
@@ -303,124 +220,32 @@ export const ContactSection: React.FC = () => {
     <>
       <footer
         id="contact"
-        className="bg-[#0C0C0C] pt-24 sm:pt-32 pb-16 px-5 sm:px-8 md:px-10 border-t border-[#D7E2EA]/15 select-none relative"
+        className="pt-24 sm:pt-32 pb-16 px-5 sm:px-8 md:px-10 select-none relative overflow-hidden"
       >
-        <div className="max-w-6xl mx-auto">
-          <Heading3D
-            title="Let's Build Something Together"
-            subtitle="I'm always interested in discussing software development, innovative projects, open-source contributions, and exciting opportunities."
-            subtitleType="prose"
-            className="mb-16 sm:mb-20"
-          />
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Section Header with Antique Comm Plaque */}
+          <div className="text-center mb-14 sm:mb-18">
+            <Heading3D
+              title="Let's Build Something Together"
+              subtitle="Dial in directly on the antique telephone or transmit a dispatch message below. The line is always open."
+              subtitleType="prose"
+            />
+          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 sm:gap-12 lg:gap-14 items-start">
-            {/* Left Contact Information (5 cols) */}
-            <FadeIn delay={0.15} y={30} className="lg:col-span-5 space-y-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-[#B600A8]" />
-                <h3 className="text-xs uppercase tracking-widest font-mono text-[#D7E2EA]/75 font-semibold">
-                  Contact Information
-                </h3>
+          {/* Main Content Grid: Independent 3D Rotary Telephone (Left) + Dispatch Form (Right) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Column: Independent 3D Antique Rotary Telephone (No enclosing card or separate background) */}
+            <FadeIn delay={0.15} y={30} className="lg:col-span-6 flex flex-col items-center justify-center relative">
+              {/* ── Independent 3D Telephone Centerpiece ── */}
+              {/* Sitting directly within the website's background with zero enclosing frames or cards */}
+              <div ref={telephoneRef} className="w-full relative z-10 flex items-center justify-center">
+                <VintageTelephone3D isRinging={isRinging} onRingEnd={() => setIsRinging(false)} />
               </div>
 
-              <ContactInfoCard3D
-                icon={Mail}
-                label="Email"
-                value="shourya24600101@gmail.com"
-                href="mailto:shourya24600101@gmail.com"
-                accentColor="text-[#E879F9]"
-                glowColor="rgba(182, 0, 168, 0.2)"
-                iconBgColor="bg-[#B600A8]/15"
-                index={0}
-              />
-
-              <ContactInfoCard3D
-                icon={Phone}
-                label="Phone"
-                value="+91 7870026644"
-                href="tel:+917870026644"
-                accentColor="text-emerald-400"
-                glowColor="rgba(16, 185, 129, 0.2)"
-                iconBgColor="bg-emerald-500/15"
-                index={1}
-              />
-
-              <ContactInfoCard3D
-                icon={MapPin}
-                label="Location"
-                value="Bhubaneswar, India"
-                accentColor="text-cyan-400"
-                glowColor="rgba(6, 182, 212, 0.2)"
-                iconBgColor="bg-cyan-500/15"
-                index={2}
-              />
-
-              {/* Quick links & Resume button */}
-              <div className="pt-3 flex flex-wrap gap-3">
-                <motion.a
-                  href="https://linkedin.com/in/shourya-kumar-9143372b9"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onMouseEnter={() => playKeyboardSound(3, false)}
-                  whileHover={{ y: -3, scale: 1.03 }}
-                  whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#0077B5]/60 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
-                >
-                  <Linkedin className="w-4 h-4 text-[#0077B5] group-hover:scale-110 transition-transform" />
-                  <span>LinkedIn Profile</span>
-                </motion.a>
-
-                <motion.a
-                  href="https://github.com/shouryakumar246001"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onMouseEnter={() => playKeyboardSound(4, false)}
-                  whileHover={{ y: -3, scale: 1.03 }}
-                  whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-white/40 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
-                >
-                  <Github className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                  <span>GitHub Profile</span>
-                </motion.a>
-
-                <motion.a
-                  href="https://codolio.com/profile/sugaa.shourya"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onMouseEnter={() => playKeyboardSound(5, false)}
-                  whileHover={{ y: -3, scale: 1.03 }}
-                  whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-white/15 hover:border-[#F97316]/60 bg-[#121316] hover:bg-[#17181d] text-xs uppercase tracking-wider font-medium text-white transition-colors no-underline group cursor-pointer"
-                >
-                  <img src="/codolio.png" alt="Codolio" className="w-4 h-4 object-contain group-hover:scale-110 transition-transform" />
-                  <span>Codolio Profile</span>
-                </motion.a>
-
-                <motion.button
-                  onClick={() => {
-                    playKeyboardSound(6, true);
-                    const link = document.createElement('a');
-                    link.href = '/Shourya_Kumar_Resume.pdf';
-                    link.download = 'Shourya_Kumar_Resume.pdf';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setIsResumeOpen(true);
-                  }}
-                  onMouseEnter={() => playKeyboardSound(6, false)}
-                  whileHover={{ y: -3, scale: 1.03 }}
-                  whileTap={{ y: 1, scale: 0.97 }}
-                  className="flex items-center gap-2 px-5 py-3 rounded-full border border-emerald-500/50 bg-[#091411] hover:bg-[#0d1c17] hover:border-emerald-500/70 text-xs uppercase tracking-wider font-medium text-emerald-300 transition-colors cursor-pointer group"
-                >
-                  <Download className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  <span>Download Resume</span>
-                </motion.button>
-              </div>
             </FadeIn>
 
-            {/* Right Contact Form (7 cols) */}
-            <FadeIn delay={0.25} y={30} className="lg:col-span-7">
-              <div>
+            {/* Right Column: Vintage-Themed Message Form (6 cols) */}
+            <FadeIn delay={0.25} y={30} className="lg:col-span-6">
               <div style={{ perspective: 1200 }}>
                 <motion.div
                   ref={formCardRef}
@@ -440,41 +265,34 @@ export const ContactSection: React.FC = () => {
                   }}
                   className="relative rounded-[28px] sm:rounded-[36px] border border-white/20 bg-[#101115]/95 backdrop-blur-2xl p-6 sm:p-8 md:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(182,0,168,0.15)] overflow-hidden"
                 >
-                  <div
-                    className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
-                    style={{
-                      opacity: formSpotlight.opacity,
-                      background: `radial-gradient(550px circle at ${formSpotlight.x}px ${formSpotlight.y}px, rgba(182, 0, 168, 0.12), transparent 75%)`,
-                    }}
-                  />
-
                   <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
                   <div style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}>
-                    <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white mb-2">
-                      Send a Message
+                    <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white mb-2 font-['Kanit']">
+                      Transmit a Dispatch
                     </h3>
                     <p className="text-xs sm:text-sm text-[#D7E2EA]/70 font-light mb-7">
-                      Fill in the details below and send directly to my email.
+                      Send a message directly to my desk. All fields are dispatched across the wire securely.
                     </p>
                   </div>
 
+                  {/* Submission State Handlers */}
                   {submissionState === 'success' ? (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-4"
+                      className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/35 text-center space-y-4"
                     >
                       <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />
                       <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                        Message Sent Successfully!
+                        Dispatch Delivered Successfully!
                       </h4>
                       <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-md mx-auto leading-relaxed">
-                        Your message has been dispatched directly to{' '}
-                        <span className="text-white font-mono font-medium underline underline-offset-4 decoration-emerald-500/60">
+                        Your message has been transmitted directly to{' '}
+                        <span className="text-[#D7A7F2] font-mono font-medium underline underline-offset-4 decoration-[#B600A8]/60">
                           shourya24600101@gmail.com
                         </span>
-                        . Thank you for reaching out!
+                        . Thank you for dialing in—I will respond promptly!
                       </p>
                       <div className="pt-2">
                         <button
@@ -483,9 +301,9 @@ export const ContactSection: React.FC = () => {
                             setStatusError(null);
                             setFormData({ name: '', email: '', subject: '', message: '' });
                           }}
-                          className="px-6 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-wider text-white hover:text-emerald-300 transition-colors cursor-pointer"
+                          className="px-6 py-2.5 rounded-full border border-[#B600A8]/40 bg-[#B600A8]/15 hover:bg-[#B600A8]/25 text-xs uppercase font-mono tracking-wider text-white transition-colors cursor-pointer"
                         >
-                          Send another message
+                          Send another dispatch
                         </button>
                       </div>
                     </motion.div>
@@ -493,25 +311,25 @@ export const ContactSection: React.FC = () => {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-7 sm:p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-center space-y-4"
+                      className="p-7 sm:p-8 rounded-2xl bg-[#B600A8]/10 border border-[#B600A8]/35 text-center space-y-4"
                     >
-                      <AlertCircle className="w-12 h-12 text-amber-400 mx-auto" />
+                      <AlertCircle className="w-12 h-12 text-[#D7A7F2] mx-auto" />
                       <h4 className="font-bold text-white uppercase text-base sm:text-lg">
                         One-Time Mailbox Activation Needed
                       </h4>
                       <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-lg mx-auto leading-relaxed">
                         FormSubmit requires a one-time activation. A confirmation email was sent to{' '}
-                        <span className="text-white font-mono font-medium underline underline-offset-4 decoration-amber-500/60">
+                        <span className="text-[#D7A7F2] font-mono font-medium underline underline-offset-4 decoration-[#B600A8]/60">
                           shourya24600101@gmail.com
                         </span>
-                        . Please click <span className="text-amber-300 font-semibold">'Activate Form'</span> in your inbox or spam folder to enable automatic submissions!
+                        . Please click <span className="text-[#D7A7F2] font-semibold">'Activate Form'</span> in your inbox or spam folder to enable automatic submissions!
                       </p>
-                      <div className="p-4 rounded-xl bg-black/40 border border-white/10 max-w-lg mx-auto space-y-2 text-left">
-                        <div className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold">
+                      <div className="p-4 rounded-xl bg-black/50 border border-white/15 max-w-lg mx-auto space-y-2 text-left">
+                        <div className="text-[11px] font-mono uppercase tracking-wider text-[#D7A7F2] font-semibold">
                           Send this message right now with 1-click:
                         </div>
-                        <p className="text-xs text-[#D7E2EA]/70">
-                          Your typed message is preserved! Click below to send directly to Shourya's email with zero delay:
+                        <p className="text-xs text-[#D7E2EA]/80">
+                          Your typed message is preserved! Click below to send directly with zero delay:
                         </p>
                         <div className="flex flex-wrap gap-2 pt-1">
                           <a
@@ -549,16 +367,16 @@ export const ContactSection: React.FC = () => {
                     >
                       <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
                       <h4 className="font-bold text-white uppercase text-base sm:text-lg">
-                        Service Delay / Network Issue
+                        Dispatch Delay / Network Line Busy
                       </h4>
                       <p className="text-xs sm:text-sm text-[#D7E2EA]/85 font-light max-w-lg mx-auto leading-relaxed">
-                        {statusError || 'The web dispatch service took too long or was unreachable.'}
+                        {statusError || 'The web dispatch line took too long or was unreachable.'}
                       </p>
-                      <div className="p-4 rounded-xl bg-black/40 border border-white/10 max-w-lg mx-auto space-y-2 text-left">
+                      <div className="p-4 rounded-xl bg-black/50 border border-white/15 max-w-lg mx-auto space-y-2 text-left">
                         <div className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-semibold">
                           Send instantly via Gmail or Mail App:
                         </div>
-                        <p className="text-xs text-[#D7E2EA]/70">
+                        <p className="text-xs text-[#D7E2EA]/80">
                           Don't worry, your typed message is saved! Click below to send directly:
                         </p>
                         <div className="flex flex-wrap gap-2 pt-1">
@@ -643,14 +461,14 @@ export const ContactSection: React.FC = () => {
                           name="subject"
                           value={formData.subject}
                           onChange={handleChange}
-                          placeholder="Internship Opportunity / Project Inquiry"
+                          placeholder="Project Collaboration / Opportunity"
                           className="w-full px-4.5 py-3.5 rounded-xl bg-[#16171B]/90 border border-white/15 text-white placeholder-[#D7E2EA]/30 text-sm focus:outline-none focus:border-[#B600A8] focus:bg-[#1B1C22] focus:shadow-[0_0_25px_rgba(182,0,168,0.25),inset_0_1px_2px_rgba(255,255,255,0.08)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] transition-all duration-200"
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-mono uppercase tracking-wider text-[#D7E2EA]/75 mb-1.5 font-medium">
-                          Message *
+                          Write Your Message *
                         </label>
                         <textarea
                           name="message"
@@ -663,16 +481,16 @@ export const ContactSection: React.FC = () => {
                         />
                       </div>
 
+                      {/* Prominent purple SEND MESSAGE Button */}
                       <motion.button
                         type="submit"
                         disabled={isSubmitting}
                         whileHover={isSubmitting ? {} : { scale: 1.02, y: -2 }}
                         whileTap={isSubmitting ? {} : { scale: 0.97, y: 1 }}
-                        className={`w-full rounded-full text-white font-medium uppercase tracking-widest py-4 text-xs sm:text-sm cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 ${
-                          isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                        }`}
+                        className={`w-full rounded-full text-[#FDFCF7] font-semibold uppercase tracking-widest py-4 text-xs sm:text-sm cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                          }`}
                         style={{
-                          background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
+                          background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 100%)',
                           boxShadow: '0px 8px 30px rgba(182, 0, 168, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.4), inset 0 -2px 6px rgba(0, 0, 0, 0.5)',
                           outline: '2px solid rgba(255, 255, 255, 0.85)',
                           outlineOffset: '-3px',
@@ -685,20 +503,21 @@ export const ContactSection: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <Send className="w-4 h-4" />
-                            <span>Send Message</span>
+                            <Send className="w-4 h-4 text-[#FDFCF7]" />
+                            <span>Transmit Message</span>
                           </>
                         )}
                       </motion.button>
 
-                      <div className="pt-2 flex items-center justify-between text-xs font-mono text-[#D7E2EA]/60 flex-wrap gap-2">
-                        <span>Prefer direct email?</span>
+                      {/* Helper Fallback Links */}
+                      <div className="pt-2 flex items-center justify-between text-xs font-mono text-[#D7E2EA]/70 flex-wrap gap-2">
+                        <span>Prefer direct mail application?</span>
                         <div className="flex items-center gap-3">
                           <a
                             href={getGmailWebUrl()}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#E879F9] hover:underline flex items-center gap-1 transition-colors"
+                            className="text-[#D7A7F2] hover:underline flex items-center gap-1 transition-colors"
                           >
                             <ExternalLink className="w-3 h-3" />
                             <span>Gmail</span>
@@ -717,17 +536,16 @@ export const ContactSection: React.FC = () => {
                   )}
                 </motion.div>
               </div>
-              </div>
             </FadeIn>
           </div>
 
-          <div className="mt-20 pt-8 border-t border-[#D7E2EA]/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#D7E2EA]/50 text-center sm:text-left">
+          {/* Section Footer */}
+          <div className="mt-20 pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#D7E2EA]/50 text-center sm:text-left">
             <div>© {new Date().getFullYear()} Shourya Kumar. All rights reserved.</div>
-            <div>Designed with React • TypeScript • Tailwind CSS • Framer Motion</div>
+            <div>Vintage 3D Rotary Hotline • Three.js • Web Audio API • React • TypeScript</div>
           </div>
         </div>
 
-        <ResumeModal isOpen={isResumeOpen} onClose={() => setIsResumeOpen(false)} />
       </footer>
     </>
   );

@@ -99,3 +99,75 @@ export function playKeyboardSound(pitchOffset = 0, isPress = false) {
     // Fallback
   }
 }
+
+export function playRotaryClick(pitchOffset = 0) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const play = () => {
+      try {
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        const freq = 480 + (pitchOffset % 5) * 40;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.045);
+        gain.gain.setValueAtTime(0.24, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } catch {}
+    };
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(play).catch(() => {});
+    } else {
+      play();
+    }
+  } catch {}
+}
+export function playVintageBellRing() {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const play = () => {
+      try {
+        const now = ctx.currentTime;
+        // Dual brass bells (853Hz and 960Hz) with 14Hz rapid tremolo
+        [853, 960].forEach((freq) => {
+          const osc = ctx.createOscillator();
+          const tremolo = ctx.createOscillator();
+          const tremoloGain = ctx.createGain();
+          const mainGain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          tremolo.type = 'square';
+          tremolo.frequency.setValueAtTime(14, now);
+
+          tremoloGain.gain.setValueAtTime(0.35, now);
+          tremolo.connect(tremoloGain.gain);
+
+          mainGain.gain.setValueAtTime(0.22, now);
+          mainGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+          osc.connect(mainGain);
+          mainGain.connect(ctx.destination);
+
+          osc.start(now);
+          tremolo.start(now);
+          osc.stop(now + 1.45);
+          tremolo.stop(now + 1.45);
+        });
+      } catch {}
+    };
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(play).catch(() => {});
+    } else {
+      play();
+    }
+  } catch {}
+}
