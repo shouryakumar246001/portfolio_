@@ -4,6 +4,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { escapeHtml, getSmtpOptions, validateContactPayload } from '../api/contact-utils.js';
 
 dotenv.config();
 
@@ -20,22 +21,7 @@ app.use(express.json());
 
 // Create nodemailer transporter
 function createTransporter() {
-  const user = process.env.SMTP_USER || RECIPIENT_EMAIL;
-  const pass = process.env.SMTP_PASS;
-
-  if (pass) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-    });
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: process.env.SMTP_SECURE !== 'false',
-    auth: pass ? { user, pass } : undefined,
-  });
+  return nodemailer.createTransport(getSmtpOptions());
 }
 
 // Health check endpoint
@@ -45,27 +31,18 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     recipient: RECIPIENT_EMAIL,
     smtpConfigured: Boolean(process.env.SMTP_PASS),
-    mailConfigured: Boolean(process.env.RESEND_API_KEY || process.env.SMTP_PASS),
+    mailConfigured: Boolean(process.env.SMTP_PASS),
   });
 });
 
 // Main Contact Form Submission Endpoint
 app.post('/api/contact', async (req, res) => {
   try {
-    const { name, email, subject, message } = req.body;
-
-    // Validation
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, error: 'Name is required' });
+    const validation = validateContactPayload(req.body);
+    if (validation.error) {
+      return res.status(400).json({ success: false, error: validation.error });
     }
-    if (!email || !email.trim() || !email.includes('@')) {
-      return res.status(400).json({ success: false, error: 'Valid email is required' });
-    }
-    if (!message || !message.trim()) {
-      return res.status(400).json({ success: false, error: 'Message is required' });
-    }
-
-    const cleanSubject = subject && subject.trim() ? subject.trim() : `New Inquiry from ${name.trim()}`;
+    const { name, email, subject: cleanSubject, message } = validation.data;
     const cleanDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     console.log(`[Contact API] Received message from ${name} (${email}): "${cleanSubject}"`);
@@ -101,23 +78,23 @@ app.post('/api/contact', async (req, res) => {
                 <div class="content">
                   <div class="field">
                     <div class="field-label">Sender Name</div>
-                    <div class="field-value">${name}</div>
+                    <div class="field-value">${escapeHtml(name)}</div>
                   </div>
                   <div class="field">
                     <div class="field-label">Email Address</div>
-                    <div class="field-value"><a href="mailto:${email}" style="color:#e879f9;text-decoration:none;">${email}</a></div>
+                    <div class="field-value"><a href="mailto:${escapeHtml(email)}" style="color:#e879f9;text-decoration:none;">${escapeHtml(email)}</a></div>
                   </div>
                   <div class="field">
                     <div class="field-label">Subject</div>
-                    <div class="field-value">${cleanSubject}</div>
+                    <div class="field-value">${escapeHtml(cleanSubject)}</div>
                   </div>
                   <div class="field">
                     <div class="field-label">Time Sent (IST)</div>
-                    <div class="field-value">${cleanDate}</div>
+                    <div class="field-value">${escapeHtml(cleanDate)}</div>
                   </div>
                   <div class="field">
                     <div class="field-label">Message Content</div>
-                    <div class="message-box">${message}</div>
+                    <div class="message-box">${escapeHtml(message)}</div>
                   </div>
                 </div>
                 <div class="footer">
@@ -153,26 +130,39 @@ app.post('/api/contact', async (req, res) => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 22000);
-      const formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-          _subject: `[Portfolio] ${cleanSubject}`,
-          message: message.trim(),
-          _captcha: 'false',
-          _template: 'box',
-          _replyto: email.trim(),
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
+      const originUrl = req.headers['origin'] || req.headers['referer'] || 'http://localhost:5173';
+      const userAgent = (req.headers['user-agent'] && !/python|curl|postman|urllib/i.test(req.headers['user-agent']))
+        ? req.headers['user-agent']
+        : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
-      const data = await formSubmitRes.json();
+      let formSubmitRes;
+      try {
+        formSubmitRes = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Origin': originUrl,
+            'Referer': originUrl.endsWith('/') ? originUrl : `${originUrl}/`,
+            'User-Agent': userAgent,
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            _subject: `[Portfolio] ${cleanSubject}`,
+            message,
+            _captcha: 'false',
+            _template: 'box',
+            _replyto: email,
+          }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      const data = await formSubmitRes.json().catch(() => ({}));
+      console.log('[Contact API] FormSubmit returned:', data);
 
       if (typeof data.message === 'string' && /activation/i.test(data.message)) {
         console.log(`[Contact API] FormSubmit requested email activation for ${RECIPIENT_EMAIL}`);

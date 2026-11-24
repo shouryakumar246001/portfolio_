@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import { getSmtpOptions, validateContactPayload } from './contact-utils.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,20 +20,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, subject, message } = req.body || {};
-
-    if (!name || !name.trim()) {
-      return res.status(400).json({ success: false, error: 'Name is required' });
+    const validation = validateContactPayload(req.body);
+    if (validation.error) {
+      return res.status(400).json({ success: false, error: validation.error });
     }
-    if (!email || !email.trim() || !email.includes('@')) {
-      return res.status(400).json({ success: false, error: 'Valid email is required' });
-    }
-    if (!message || !message.trim()) {
-      return res.status(400).json({ success: false, error: 'Message is required' });
-    }
+    const { name, email, subject, message } = validation.data;
 
     const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || 'shourya24600101@gmail.com';
-    const cleanSubject = subject && subject.trim() ? subject.trim() : `New Inquiry from ${name.trim()}`;
+    const cleanSubject = subject;
     const cleanDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     // Method 1: Resend (Official Vercel Partner - 100% Inbox Delivery)
@@ -62,13 +57,7 @@ export default async function handler(req, res) {
     // Method 2: Gmail SMTP
     if (process.env.SMTP_PASS) {
       try {
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: process.env.SMTP_USER || RECIPIENT_EMAIL,
-            pass: process.env.SMTP_PASS,
-          },
-        });
+        const transporter = nodemailer.createTransport(getSmtpOptions());
 
         await transporter.sendMail({
           from: `"Portfolio Contact" <${process.env.SMTP_USER || RECIPIENT_EMAIL}>`,
@@ -91,12 +80,20 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 22000);
     let formSubmitResponse;
+    const originUrl = req.headers['origin'] || req.headers['referer'] || 'https://portfolio-shouryakumar.vercel.app';
+    const userAgent = (req.headers['user-agent'] && !/python|curl|postman|urllib/i.test(req.headers['user-agent']))
+      ? req.headers['user-agent']
+      : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+
     try {
       formSubmitResponse = await fetch(`https://formsubmit.co/ajax/${RECIPIENT_EMAIL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          'Origin': originUrl,
+          'Referer': originUrl.endsWith('/') ? originUrl : `${originUrl}/`,
+          'User-Agent': userAgent,
         },
         body: JSON.stringify({
           name: name.trim(),
