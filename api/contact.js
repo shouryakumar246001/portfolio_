@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 22000);
+    const timeoutId = setTimeout(() => controller.abort(), 75000);
     let formSubmitResponse;
     const originUrl = req.headers['origin'] || req.headers['referer'] || 'https://portfolio-shouryakumar.vercel.app';
     const userAgent = (req.headers['user-agent'] && !/python|curl|postman|urllib/i.test(req.headers['user-agent']))

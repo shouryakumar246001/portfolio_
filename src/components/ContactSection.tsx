@@ -129,9 +129,16 @@ export const ContactSection: React.FC = () => {
       }
     };
 
-    // Attempt 1: Try backend API (/api/contact) with a 3.5s timeout
+    // Attempt 1: Try backend API (/api/contact) with a realistic timeout (45s)
     try {
-      setSubmittingStatus('Checking server dispatch handler...');
+      setSubmittingStatus('Connecting to vintage dispatch line...');
+      const statusTimer1 = setTimeout(() => {
+        setSubmittingStatus('Transmitting dispatch across wire...');
+      }, 3000);
+      const statusTimer2 = setTimeout(() => {
+        setSubmittingStatus('Waiting for mail carrier confirmation...');
+      }, 10000);
+
       const apiRes = await fetchWithTimeout('/api/contact', {
         method: 'POST',
         headers: {
@@ -144,7 +151,10 @@ export const ContactSection: React.FC = () => {
           subject: cleanSubject,
           message: cleanMessage,
         }),
-      }, 3500);
+      }, 45000);
+
+      clearTimeout(statusTimer1);
+      clearTimeout(statusTimer2);
 
       const apiData = await apiRes.json().catch(() => ({}));
 
@@ -166,9 +176,9 @@ export const ContactSection: React.FC = () => {
       // Backend offline or timed out - seamlessly fall through to direct FormSubmit
     }
 
-    // Attempt 2: Direct browser dispatch via FormSubmit (6s timeout)
+    // Attempt 2: Direct browser dispatch via FormSubmit (45s timeout)
     try {
-      setSubmittingStatus('Transmitting dispatch via FormSubmit...');
+      setSubmittingStatus('Transmitting dispatch via FormSubmit carrier...');
       const formSubmitRes = await fetchWithTimeout('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
         method: 'POST',
         headers: {
@@ -180,11 +190,8 @@ export const ContactSection: React.FC = () => {
           email: cleanEmail,
           _subject: `[Portfolio Inquiry] ${cleanSubject}`,
           message: cleanMessage,
-          _captcha: 'false',
-          _template: 'box',
-          _replyto: cleanEmail,
         }),
-      }, 6000);
+      }, 45000);
 
       const data = await formSubmitRes.json().catch(() => ({}));
       setIsSubmitting(false);

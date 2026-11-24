@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -30,8 +31,9 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     recipient: RECIPIENT_EMAIL,
+    resendConfigured: Boolean(process.env.RESEND_API_KEY),
     smtpConfigured: Boolean(process.env.SMTP_PASS),
-    mailConfigured: Boolean(process.env.SMTP_PASS),
+    mailConfigured: Boolean(process.env.RESEND_API_KEY || process.env.SMTP_PASS),
   });
 });
 
@@ -46,6 +48,32 @@ app.post('/api/contact', async (req, res) => {
     const cleanDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
 
     console.log(`[Contact API] Received message from ${name} (${email}): "${cleanSubject}"`);
+
+    // Method 0: Resend (if RESEND_API_KEY provided)
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const { error } = await resend.emails.send({
+          from: 'Portfolio Contact <onboarding@resend.dev>',
+          to: [RECIPIENT_EMAIL],
+          reply_to: email,
+          subject: `[Portfolio] ${cleanSubject}`,
+          text: `Name: ${name}\nEmail: ${email}\nDate: ${cleanDate}\n\nMessage:\n${message}`,
+        });
+
+        if (!error) {
+          console.log(`[Contact API] Delivered via Resend to ${RECIPIENT_EMAIL}`);
+          return res.status(200).json({
+            success: true,
+            method: 'Resend Cloud Delivery',
+            message: `Delivered directly to ${RECIPIENT_EMAIL}`,
+          });
+        }
+        console.warn('[Contact API] Resend returned error:', error);
+      } catch (resendErr) {
+        console.warn('[Contact API] Resend failed:', resendErr.message);
+      }
+    }
 
     // Method 1: Nodemailer via Gmail SMTP (if SMTP_PASS provided)
     if (process.env.SMTP_PASS) {
@@ -129,8 +157,8 @@ app.post('/api/contact', async (req, res) => {
     // Method 2: FormSubmit dispatch fallback
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 22000);
-      const originUrl = req.headers['origin'] || req.headers['referer'] || 'http://localhost:5173';
+      const timeoutId = setTimeout(() => controller.abort(), 75000);
+      const originUrl = req.headers['origin'] || req.headers['referer'] || 'https://portfolio-shouryakumar.vercel.app';
       const userAgent = (req.headers['user-agent'] && !/python|curl|postman|urllib/i.test(req.headers['user-agent']))
         ? req.headers['user-agent']
         : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
