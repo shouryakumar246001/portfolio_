@@ -10,25 +10,21 @@ export const Preloader: React.FC = () => {
     document.body.style.overflow = 'hidden';
 
     let current = 0;
-    let holdTimeout: number | undefined;
 
-    // 100 steps at 50ms, followed by a 1-second hold, equals 6 seconds.
+    // 100 steps at 50ms gives the preloader a 5-second runtime.
     const interval = setInterval(() => {
       current = Math.min(100, current + 1);
       setProgress(current);
 
       if (current >= 100) {
         clearInterval(interval);
-        holdTimeout = window.setTimeout(() => {
-          setIsComplete(true);
-          document.body.style.overflow = '';
-        }, 1000);
+        setIsComplete(true);
+        document.body.style.overflow = '';
       }
     }, 50);
 
     return () => {
       clearInterval(interval);
-      if (holdTimeout) window.clearTimeout(holdTimeout);
       document.body.style.overflow = '';
     };
   }, []);
