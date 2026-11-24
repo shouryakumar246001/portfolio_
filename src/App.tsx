@@ -10,7 +10,7 @@ import MarqueeSection from './components/MarqueeSection';
 import AboutSection from './components/AboutSection';
 import SkillsSection from './components/SkillsSection';
 import VHSShelfSection from './components/VHSShelfSection';
-import UranusBackground from './components/UranusBackground';
+import BluePlanetBackground from './components/BluePlanetBackground';
 import ProjectsSection from './components/ProjectsSection';
 import ExperienceSection from './components/ExperienceSection';
 import AchievementsSection from './components/AchievementsSection';
@@ -26,16 +26,18 @@ export const App: React.FC = () => {
       <div className="starry-universe relative z-0">
         <StarBackground />
         <MonkeyBackground />
-        <KeycapSkillsSection />
-        <MarqueeSection />
-        <AboutSection />
-        <SkillsSection />
-        <VHSShelfSection />
-        <UranusBackground />
-        <ProjectsSection />
-        <ExperienceSection />
-        <AchievementsSection />
-        <ContactSection />
+        <BluePlanetBackground />
+        <div className="relative z-10">
+          <KeycapSkillsSection />
+          <MarqueeSection />
+          <AboutSection />
+          <SkillsSection />
+          <VHSShelfSection />
+          <ProjectsSection />
+          <ExperienceSection />
+          <AchievementsSection />
+          <ContactSection />
+        </div>
       </div>
     </div>
   );

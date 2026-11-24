@@ -775,7 +775,7 @@ export const VHSShelfSection: React.FC = () => {
             playKeyboardSound(0, true);
             openDetail(stateRef.current.activeFilmIdx);
           }}
-          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/30 bg-black/70 backdrop-blur-md flex items-center justify-center text-white hover:text-white hover:border-white/70 hover:bg-[#1F3FB0]/90 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.7),0_0_24px_rgba(31,63,176,0.28)]"
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-30 w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/30 bg-[#101115] flex items-center justify-center text-white hover:text-white hover:border-white/70 hover:bg-[#1F3FB0] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.7),0_0_24px_rgba(31,63,176,0.28)]"
           aria-label="Read the selected book"
           title="Click to Read the Book"
         >
@@ -788,7 +788,7 @@ export const VHSShelfSection: React.FC = () => {
             playKeyboardSound(3, false);
             setActive(stateRef.current.sTarget + 1);
           }}
-          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full border border-[#D7E2EA]/20 bg-black/60 backdrop-blur-md flex items-center justify-center text-[#D7E2EA]/70 hover:text-[#D7E2EA] hover:border-[#D7E2EA]/50 hover:bg-[#1F3FB0]/20 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg"
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full border border-[#D7E2EA]/20 bg-[#101115] flex items-center justify-center text-[#D7E2EA]/70 hover:text-[#D7E2EA] hover:border-[#D7E2EA]/50 hover:bg-[#1F3FB0] hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg"
           aria-label="Next film"
           title="Next Book"
         >
@@ -857,13 +857,13 @@ export const VHSShelfSection: React.FC = () => {
       {/* Detail overlay */}
       <div
         ref={detailRef}
-        className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl items-center justify-center p-4 sm:p-8"
+        className="fixed inset-0 z-[60] bg-[#08090D] items-center justify-center p-4 sm:p-8"
         style={{ display: 'none' }}
       >
         <div className="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-[28px] border border-white/15 bg-[#101115] shadow-[0_40px_120px_rgba(0,0,0,0.95)] p-6 sm:p-10 flex flex-col md:flex-row gap-8">
           {/* Close button */}
           <button
-            className="detail-close absolute top-5 right-5 w-9 h-9 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#D7E2EA] transition-all cursor-pointer z-10"
+            className="detail-close absolute top-5 right-5 w-9 h-9 rounded-full border border-white/20 bg-[#202126] hover:bg-[#303138] flex items-center justify-center text-[#D7E2EA] transition-all cursor-pointer z-10"
             onClick={closeDetail}
             aria-label="Close"
           >
@@ -893,7 +893,7 @@ export const VHSShelfSection: React.FC = () => {
             <div className="mt-4 flex gap-3 flex-wrap">
               <button
                 onClick={closeDetail}
-                className="px-5 py-2.5 rounded-full border border-[#D7E2EA]/20 bg-white/5 hover:bg-white/10 text-xs uppercase font-mono tracking-widest text-[#D7E2EA] transition-all cursor-pointer"
+                className="px-5 py-2.5 rounded-full border border-[#D7E2EA]/20 bg-[#202126] hover:bg-[#303138] text-xs uppercase font-mono tracking-widest text-[#D7E2EA] transition-all cursor-pointer"
               >
                 ← Back to Shelf
               </button>

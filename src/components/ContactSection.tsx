@@ -212,7 +212,7 @@ export const ContactSection: React.FC = () => {
       }
     };
 
-    // Send through the backend once to avoid duplicate submissions on slow responses.
+    // Attempt 1: Try backend API (/api/contact) with a 3.5s timeout
     try {
       setSubmittingStatus('Checking server mail handler...');
       const apiRes = await fetchWithTimeout('/api/contact', {
@@ -227,7 +227,7 @@ export const ContactSection: React.FC = () => {
           subject: cleanSubject,
           message: cleanMessage,
         }),
-      });
+      }, 3500);
 
       const apiData = await apiRes.json().catch(() => ({}));
 
@@ -245,22 +245,56 @@ export const ContactSection: React.FC = () => {
         setSubmissionState('success');
         return;
       }
+    } catch {
+      // Backend offline, timed out, or not running - fall through to direct FormSubmit
+    }
 
+    // Attempt 2: Direct browser dispatch via FormSubmit (6s timeout)
+    try {
+      setSubmittingStatus('Dispatching via FormSubmit...');
+      const formSubmitRes = await fetchWithTimeout('https://formsubmit.co/ajax/shourya24600101@gmail.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+          _subject: `[Portfolio Inquiry] ${cleanSubject}`,
+          message: cleanMessage,
+          _captcha: 'false',
+          _template: 'box',
+          _replyto: cleanEmail,
+        }),
+      }, 6000);
+
+      const data = await formSubmitRes.json().catch(() => ({}));
       setIsSubmitting(false);
+
+      if (data.success === 'true' || data.success === true) {
+        setSubmissionState('success');
+        return;
+      }
+
+      if (typeof data.message === 'string' && /activation|confirm.*email|verify.*email/i.test(data.message)) {
+        setSubmissionState('needs_activation');
+        setStatusError(
+          "FormSubmit sent an activation email to shourya24600101@gmail.com. Once you click 'Activate Form' in your inbox (or Spam folder), automatic delivery will be enabled. Until then, use the instant 1-click Gmail or Mail App button below!"
+        );
+        return;
+      }
+
       setSubmissionState('error');
-      setStatusError(
-        apiData.error ||
-        apiData.message ||
-        `The server could not confirm delivery${apiRes.ok ? '.' : ` (HTTP ${apiRes.status}).`} Check your inbox before retrying, in case the message was already delivered. Gmail and Mail App options are below.`
-      );
+      setStatusError(data.message || 'The mail service took too long to confirm delivery.');
     } catch (err: unknown) {
       setIsSubmitting(false);
       setSubmissionState('error');
       const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('aborted'));
       setStatusError(
         isTimeout
-          ? 'The server did not confirm delivery in time. Your message may already have been delivered, so check your inbox before retrying. Gmail and Mail App options are below.'
-          : 'Could not connect to the mail server. Check your connection, then try again or use the Gmail or Mail App option below.'
+          ? 'Network request timed out. You can dispatch your message instantly in 1-click via Gmail or your mail app below without retyping!'
+          : 'Could not connect to the remote mail forwarder. You can dispatch your message instantly in 1-click via Gmail or your mail app below!'
       );
     }
   };
@@ -384,11 +418,9 @@ export const ContactSection: React.FC = () => {
               </div>
             </FadeIn>
 
-            {/* Right Contact Form (7 cols) — Spider Gwen stands beside this */}
+            {/* Right Contact Form (7 cols) */}
             <FadeIn delay={0.25} y={30} className="lg:col-span-7">
-              {/* Outer wrapper: relative so Spider Gwen can be positioned outside the card */}
-              <div className="relative">
-
+              <div>
               <div style={{ perspective: 1200 }}>
                 <motion.div
                   ref={formCardRef}
@@ -685,7 +717,7 @@ export const ContactSection: React.FC = () => {
                   )}
                 </motion.div>
               </div>
-              </div>{/* end relative wrapper for Spider Gwen */}
+              </div>
             </FadeIn>
           </div>
 

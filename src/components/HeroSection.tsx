@@ -163,13 +163,6 @@ export const HeroSection: React.FC = () => {
               <Download className="w-4 h-4" />
               <span>Download Resume</span>
             </button>
-
-            <a
-              href="#projects"
-              className="inline-flex items-center justify-center rounded-full border-2 border-white/25 bg-white/[0.05] backdrop-blur-xl text-[#D7E2EA] font-medium uppercase tracking-widest px-7 py-3 sm:px-9 sm:py-3.5 text-xs sm:text-sm hover:bg-white/15 hover:border-white/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_0_rgba(255,255,255,0.15)] transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 no-underline"
-            >
-              View Projects
-            </a>
           </FadeIn>
         </div>
       </section>
