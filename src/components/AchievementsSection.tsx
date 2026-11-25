@@ -111,43 +111,39 @@ const AchievementCard3D: React.FC<{ item: AchievementItem; index: number }> = ({
         style={{
           transformStyle: 'preserve-3d',
           willChange: 'transform',
-          background: `
-            radial-gradient(ellipse 50% 45% at 92% 50%, rgba(105, 87, 219, 0.28), transparent 70%),
-            radial-gradient(ellipse 65% 40% at 20% 65%, rgba(61, 232, 186, 0.25), transparent 70%),
-            linear-gradient(180deg, rgba(9, 45, 52, 0.52) 0%, rgba(4, 6, 10, 0.88) 55%, #04060a 100%)
-          `,
+          background: 'rgba(20, 20, 22, 0.48)',
         }}
-        className="relative rounded-[26px] sm:rounded-[30px] p-6 sm:p-8 md:p-9 flex flex-col justify-between overflow-hidden cursor-pointer select-none backdrop-blur-2xl border border-[#3de8ba]/20 hover:border-[#3de8ba]/45 shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_20px_rgba(61,232,186,0.06),inset_0_1px_1px_rgba(122,250,217,0.18)] hover:shadow-[0_18px_48px_rgba(0,0,0,0.65),0_0_35px_rgba(61,232,186,0.16),inset_0_1px_1px_rgba(122,250,217,0.3)] transition-all duration-300 group"
+        className="relative rounded-[26px] sm:rounded-[30px] p-6 sm:p-8 md:p-9 flex flex-col justify-between overflow-hidden cursor-pointer select-none backdrop-blur-xl border border-white/15 hover:border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.12)] hover:shadow-[0_18px_48px_rgba(0,0,0,0.65),0_0_25px_rgba(255,255,255,0.06),inset_0_1px_1px_rgba(255,255,255,0.18)] transition-all duration-300 group"
       >
-        {/* Soft directional spotlight following cursor with Aurora Emerald & Violet tints */}
+        {/* Soft neutral spotlight follows the cursor */}
         <div
           className="pointer-events-none absolute -inset-px rounded-[inherit] transition-opacity duration-300"
           style={{
             opacity: spotlight.opacity,
-            background: `radial-gradient(420px circle at ${spotlight.x}px ${spotlight.y}px, rgba(61, 232, 186, 0.25), rgba(105, 87, 219, 0.20) 45%, transparent 75%)`,
+            background: `radial-gradient(420px circle at ${spotlight.x}px ${spotlight.y}px, rgba(255, 255, 255, 0.10), transparent 75%)`,
           }}
         />
 
         {/* Ambient Top Edge Luminous Reflection wire */}
-        <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#7afad9]/60 to-[#6957db]/40 group-hover:via-[#7afad9] transition-all" />
+        <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-all" />
 
         {/* Layer 1: Top Badge & Elevated 3D Icon */}
         <div
           style={{ transform: 'translateZ(28px)', transformStyle: 'preserve-3d' }}
           className="flex items-center justify-between gap-3 mb-5"
         >
-          <span className="px-3.5 py-1 rounded-full bg-[#092d34]/70 border border-[#3de8ba]/30 text-[11px] font-mono uppercase tracking-wider text-[#7afad9] shadow-[0_0_12px_rgba(61,232,186,0.15),inset_0_1px_1px_rgba(122,250,217,0.2)]">
+          <span className="px-3.5 py-1 rounded-full bg-white/[0.07] border border-white/15 text-[11px] font-mono uppercase tracking-wider text-white/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
             {item.badge}
           </span>
 
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#092d34] to-[#04060a] border border-[#3de8ba]/35 flex items-center justify-center text-[#7afad9] group-hover:text-white group-hover:border-[#7afad9]/70 group-hover:scale-110 transition-all duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.5),0_0_16px_rgba(61,232,186,0.18)]">
-            <Icon className="w-5 h-5 text-[#7afad9] group-hover:text-[#3de8ba] transition-colors" />
+          <div className="w-11 h-11 rounded-2xl bg-white/[0.06] border border-white/20 flex items-center justify-center text-white/75 group-hover:text-white group-hover:border-white/35 group-hover:scale-110 transition-all duration-300 shadow-[0_8px_20px_rgba(0,0,0,0.5)]">
+            <Icon className="w-5 h-5 text-white/75 group-hover:text-white transition-colors" />
           </div>
         </div>
 
         {/* Layer 2: Dominant 3D Metric & Titles */}
         <div style={{ transform: 'translateZ(38px)', transformStyle: 'preserve-3d' }}>
-          <div className="text-3xl sm:text-4xl md:text-[44px] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#f0fdf4] to-[#7afad9] tracking-tight uppercase leading-none mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+          <div className="text-3xl sm:text-4xl md:text-[44px] font-black text-white tracking-tight uppercase leading-none mb-2 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
             {item.metric}
           </div>
 
@@ -155,8 +151,8 @@ const AchievementCard3D: React.FC<{ item: AchievementItem; index: number }> = ({
             {item.title}
           </h3>
 
-          <div className="text-xs font-mono text-[#7afad9] uppercase tracking-wider font-semibold mb-5 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3de8ba] shadow-[0_0_8px_#3de8ba] animate-pulse" />
+          <div className="text-xs font-mono text-[#C400E6] uppercase tracking-wider font-semibold mb-5 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C400E6] shadow-[0_0_8px_#C400E6] animate-pulse" />
             <span>{item.platform}</span>
           </div>
         </div>
@@ -164,7 +160,7 @@ const AchievementCard3D: React.FC<{ item: AchievementItem; index: number }> = ({
         {/* Layer 3: Description with Refined Border */}
         <div
           style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}
-          className="pt-4 border-t border-[#3de8ba]/15 group-hover:border-[#3de8ba]/30 transition-colors"
+          className="pt-4 border-t border-white/10 group-hover:border-white/30 transition-colors"
         >
           <p className="text-xs sm:text-sm text-[#D7E2EA]/80 font-light leading-relaxed">
             {item.description}
@@ -179,7 +175,7 @@ export const AchievementsSection: React.FC = () => {
   return (
     <section
       id="achievements"
-      className="bg-[#0C0C0C] py-20 sm:py-28 px-5 sm:px-8 md:px-10 select-none border-t border-[#3de8ba]/15 relative overflow-hidden"
+      className="bg-[#0C0C0C] py-20 sm:py-28 px-5 sm:px-8 md:px-10 select-none border-t border-white/10 relative overflow-hidden"
     >
       <div className="max-w-6xl mx-auto relative z-10">
         <Heading3D

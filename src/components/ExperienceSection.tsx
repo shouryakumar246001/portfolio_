@@ -42,37 +42,33 @@ export const ExperienceSection: React.FC = () => {
           className="mb-16 sm:mb-24"
         />
 
-        <div className="relative border-l-2 border-[#3de8ba]/25 ml-4 sm:ml-8 md:ml-12 pl-6 sm:pl-10 space-y-12 sm:space-y-16">
+        <div className="relative border-l-2 border-white/20 ml-4 sm:ml-8 md:ml-12 pl-6 sm:pl-10 space-y-12 sm:space-y-16">
           {experiencesList.map((exp, idx) => {
             const Icon = exp.icon;
             return (
               <FadeIn key={exp.role} delay={idx * 0.15} y={30} className="relative group">
-                {/* Timeline Node with Aurora Mint/Emerald Glow */}
-                <div className="absolute -left-[35px] sm:-left-[51px] top-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#04060a] border-2 border-[#7afad9] flex items-center justify-center shadow-[0_0_18px_rgba(61,232,186,0.55)] group-hover:scale-125 transition-transform duration-300">
-                  <div className="w-2 h-2 rounded-full bg-[#3de8ba] shadow-[0_0_8px_#3de8ba]" />
+                {/* Timeline node */}
+                <div className="absolute -left-[35px] sm:-left-[51px] top-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#101012] border-2 border-white/55 flex items-center justify-center shadow-[0_0_18px_rgba(255,255,255,0.18)] group-hover:scale-125 transition-transform duration-300">
+                  <div className="w-2 h-2 rounded-full bg-white/75 shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
                 </div>
 
-                {/* Aurora Veil Card Box */}
+                {/* Translucent glass card */}
                 <div
                   style={{
-                    background: `
-                      radial-gradient(ellipse 45% 40% at 90% 55%, rgba(105, 87, 219, 0.28), transparent 70%),
-                      radial-gradient(ellipse 65% 35% at 25% 65%, rgba(61, 232, 186, 0.25), transparent 70%),
-                      linear-gradient(180deg, rgba(9, 45, 52, 0.50) 0%, rgba(4, 6, 10, 0.88) 55%, #04060a 100%)
-                    `,
+                    background: 'rgba(20, 20, 22, 0.48)',
                   }}
-                  className="relative overflow-hidden rounded-3xl border border-[#3de8ba]/20 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.5),0_0_24px_rgba(61,232,186,0.08),inset_0_1px_1px_0_rgba(122,250,217,0.18)] hover:border-[#3de8ba]/45 hover:shadow-[0_16px_40px_rgba(0,0,0,0.6),0_0_32px_rgba(61,232,186,0.16),inset_0_1px_1px_rgba(122,250,217,0.3)] transition-all duration-300"
+                  className="relative overflow-hidden rounded-3xl border border-white/15 backdrop-blur-xl p-6 sm:p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.5),inset_0_1px_1px_0_rgba(255,255,255,0.12)] hover:border-white/30 hover:shadow-[0_16px_40px_rgba(0,0,0,0.6),0_0_25px_rgba(255,255,255,0.06),inset_0_1px_1px_rgba(255,255,255,0.18)] transition-all duration-300"
                 >
                   {/* Luminous Top Wire Highlight */}
-                  <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#7afad9]/60 to-[#6957db]/40" />
+                  <div className="pointer-events-none absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
                   <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                     <div>
-                      <span className="text-[11px] font-mono uppercase tracking-wider inline-block mb-2 px-3 py-0.5 rounded-full bg-[#092d34]/70 border border-[#3de8ba]/30 text-[#7afad9] shadow-[0_0_12px_rgba(61,232,186,0.15)]">
+                      <span className="text-[11px] font-mono uppercase tracking-wider inline-block mb-2 px-3 py-0.5 rounded-full bg-white/[0.07] border border-white/15 text-white/90">
                         {exp.type}
                       </span>
                       <h3 className="text-xl sm:text-2xl font-bold uppercase text-white tracking-tight flex items-center gap-2">
-                        <Icon className="w-5 h-5 text-[#3de8ba]" />
+                        <Icon className="w-5 h-5 text-white/75" />
                         {exp.role}
                       </h3>
                       <p className="text-sm sm:text-base text-[#D7E2EA]/90 font-medium mt-0.5">
@@ -82,20 +78,20 @@ export const ExperienceSection: React.FC = () => {
 
                     <div className="text-right text-xs font-mono text-[#D7E2EA]/70 space-y-1">
                       <div className="flex items-center gap-1 sm:justify-end">
-                        <Calendar className="w-3.5 h-3.5 text-[#7afad9]" />
+                        <Calendar className="w-3.5 h-3.5 text-white/70" />
                         <span>{exp.period}</span>
                       </div>
-                      <div className="flex items-center gap-1 sm:justify-end text-[#3de8ba]">
+                      <div className="flex items-center gap-1 sm:justify-end text-white/80">
                         <MapPin className="w-3.5 h-3.5" />
                         <span>{exp.location}</span>
                       </div>
                     </div>
                   </div>
 
-                  <ul className="space-y-2.5 mt-4 pt-4 border-t border-[#3de8ba]/15">
+                  <ul className="space-y-2.5 mt-4 pt-4 border-t border-white/10">
                     {exp.points.map((pt, pIdx) => (
                       <li key={pIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-[#D7E2EA]/85 font-light leading-relaxed">
-                        <CheckCircle className="w-4 h-4 text-[#7afad9] shrink-0 mt-0.5" />
+                        <CheckCircle className="w-4 h-4 text-white/70 shrink-0 mt-0.5" />
                         <span>{pt}</span>
                       </li>
                     ))}
