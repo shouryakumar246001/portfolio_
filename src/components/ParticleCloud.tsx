@@ -145,7 +145,7 @@ void main() {
   float scale = smoothstep(2.5, 12.0, distToCamera) * mix(0.5, 1.0, aRandom.z);
   vScale = scale;
 
-  gl_PointSize = max(1.5, 0.052 * uDPR * 2.0 * scale * (1000.0 / distToCamera));
+  gl_PointSize = max(1.5, 0.07 * uDPR * 2.0 * scale * (1000.0 / distToCamera));
 }
 `;
 
@@ -287,13 +287,13 @@ export const ParticleCloud: React.FC = () => {
       // Total outer donut diameter = 2 * (majorR + minorR) = 2 * (0.46 + 0.17) = 1.26
       const torusDiameter = (majorR + minorR) * 2;
       // Fit completely within viewport bounds with balanced margins so 100% of the donut is visible
-      const maxAllowedH = visibleH * 0.86;
-      const maxAllowedW = visibleW * 0.88;
+      const maxAllowedH = visibleH * 0.91;
+      const maxAllowedW = visibleW * 0.94;
       const fitDim = Math.min(maxAllowedH, maxAllowedW);
-      const s = Math.max(0.88, Math.min(2.15, fitDim / torusDiameter));
+      const s = Math.max(0.88, Math.min(2.4, fitDim / torusDiameter));
 
       pointsGroup.scale.set(s, s, s);
-      pointsGroup.position.set(0, 0.05, 0);
+      pointsGroup.position.set(0, -0.1, 0);
     };
 
     updateDonutFit();
@@ -593,7 +593,7 @@ export const ParticleCloud: React.FC = () => {
     <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden pointer-events-auto">
       <canvas ref={canvasRef} className="absolute inset-0 z-[1] w-full h-full block cursor-grab active:cursor-grabbing" />
 
-      <div className="absolute left-1/2 top-[51%] z-[3] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
+      <div className="absolute left-1/2 top-[56%] z-[3] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none">
         <div
           className={`relative h-[150px] w-[150px] overflow-hidden rounded-full bg-transparent sm:h-[190px] sm:w-[190px] md:h-[220px] md:w-[220px] lg:h-[240px] lg:w-[240px] transition-all duration-700 ease-out ${isMoonLoaded ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-0'}`}
         >
